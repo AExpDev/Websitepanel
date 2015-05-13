@@ -300,6 +300,8 @@
     <Compile Include="Statistics\StatsServer.cs" />
     <Compile Include="Statistics\StatsSite.cs" />
     <Compile Include="Statistics\StatsUser.cs" />
+    <Compile Include="StorageSpaces\StorageSpaceLevel.cs" />
+    <Compile Include="StorageSpaces\StorageSpaceLevelPaged.cs" />
     <Compile Include="Virtualization\AutomaticStopAction.cs" />
     <Compile Include="Virtualization\AutomaticStartAction.cs" />
     <Compile Include="Virtualization\BiosInfo.cs" />

@@ -117,82 +117,25 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="btnSaveSettings.Text" xml:space="preserve">
-    <value>Save Settings</value>
+  <data name="colSsLevelGeneralSettings.Text" xml:space="preserve">
+    <value>General Settings</value>
   </data>
-  <data name="chkEnableSsl.Text" xml:space="preserve">
-    <value>Yes</value>
+  <data name="locName.Text" xml:space="preserve">
+    <value>Name:</value>
   </data>
-  <data name="lclBackupFolderPath.Text" xml:space="preserve">
-    <value>Backups Folder Path:</value>
+  <data name="colSsLevelServices.InnerText" xml:space="preserve">
+    <value>Resource Groups</value>
   </data>
-  <data name="lclBackupSettings.Text" xml:space="preserve">
-    <value>Backup/Restore Settings</value>
+  <data name="valReqTxtDescription.Text" xml:space="preserve">
+    <value>*</value>
   </data>
-  <data name="lclSmtpPassword.Text" xml:space="preserve">
-    <value>Password:</value>
+  <data name="valReqTxtName.Text" xml:space="preserve">
+    <value>*</value>
   </data>
-  <data name="lclSmtpPort.Text" xml:space="preserve">
-    <value>Port:</value>
+  <data name="locDescription.Text" xml:space="preserve">
+    <value>Description:</value>
   </data>
-  <data name="lclSmtpServer.Text" xml:space="preserve">
-    <value>Server:</value>
-  </data>
-  <data name="lclSmtpSettings.Text" xml:space="preserve">
-    <value>SMTP Server Settings</value>
-  </data>
-  <data name="lclSmtpUser.Text" xml:space="preserve">
-    <value>User:</value>
-  </data>
-  <data name="locEnableSsl.Text" xml:space="preserve">
-    <value>Enable SSL:</value>
-  </data>
-  <data name="lclWpiMainFeedUrl.Text" xml:space="preserve">
-    <value>Main feed URL:</value>
-  </data>
-  <data name="lclWpiCustomFeeds.Text" xml:space="preserve">
-    <value>Custom feeds:</value>
-  </data>
-  <data name="HeaderFileManagerSettings.Text" xml:space="preserve">
-    <value>File Manager</value>
-  </data>
-  <data name="lblFileManagerEditableExtensions.Text" xml:space="preserve">
-    <value>Editable Extensions:</value>
-  </data>
-  <data name="litFileManagerEditableExtensions.Text" xml:space="preserve">
-    <value>(One (1) extension per line)</value>
-  </data>
-  <data name="lblRdsController.Text" xml:space="preserve">
-    <value>Main RDS Controller:</value>
-  </data>
-  <data name="RdsSettings.Text" xml:space="preserve">
-    <value>RDS</value>
-  </data>
-  <data name="lblWebdavPortalUrl.Text" xml:space="preserve">
-    <value>Webdav Portal URL</value>
-  </data>
-  <data name="WebdavPortalSettings.Text" xml:space="preserve">
-    <value>Organization Password Reset Module</value>
-  </data>
-  <data name="chkEnablePasswordReset.Text" xml:space="preserve">
-    <value>Yes</value>
-  </data>
-  <data name="locEnablePasswordReset.Text" xml:space="preserve">
-    <value>Enable password reset:</value>
-  </data>
-  <data name="lblAccountSid.Text" xml:space="preserve">
-    <value>AccountSID</value>
-  </data>
-  <data name="lblAuthToken.Text" xml:space="preserve">
-    <value>AuthToken</value>
-  </data>
-  <data name="lblPhoneFrom.Text" xml:space="preserve">
-    <value>Phone From</value>
-  </data>
-  <data name="TwilioSettings.Text" xml:space="preserve">
-    <value>Twilio</value>
-  </data>
-  <data name="lblPasswordResetLinkLifeSpan.Text" xml:space="preserve">
-    <value>Password Reset Link Life Span (hours):</value>
+  <data name="locResourceGroups.Text" xml:space="preserve">
+    <value>Allowed Resource Groups</value>
   </data>
 </root>

@@ -39,6 +39,7 @@ using Microsoft.Win32;
 using WebsitePanel.Providers.RemoteDesktopServices;
 using WebsitePanel.Providers.DNS;
 using WebsitePanel.Providers.DomainLookup;
+using WebsitePanel.Providers.StorageSpaces;
 
 namespace WebsitePanel.EnterpriseServer
 {
@@ -4793,6 +4794,107 @@ namespace WebsitePanel.EnterpriseServer
             int res = (int)SqlHelper.ExecuteScalar(ConnectionString, CommandType.StoredProcedure, "CheckServiceLevelUsage",
                                     new SqlParameter("@LevelID", levelID));
             return res > 0;
+        }
+
+        #endregion
+
+        #region Storage Spaces 
+
+        public static DataSet GetStorageSpaceLevelsPaged(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
+        {
+            return SqlHelper.ExecuteDataset(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpaceLevelsPaged",
+                new SqlParameter("@FilterColumn", VerifyColumnName(filterColumn)),
+                new SqlParameter("@FilterValue", VerifyColumnValue(filterValue)),
+                new SqlParameter("@SortColumn", VerifyColumnName(sortColumn)),
+                new SqlParameter("@startRow", startRow),
+                new SqlParameter("@maximumRows", maximumRows)
+            );
+        }
+
+        public static IDataReader GetStorageSpaceLevelById(int id)
+        {
+            return SqlHelper.ExecuteReader(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpaceLevelById",
+                new SqlParameter("@ID", id)
+            );
+        }
+
+        public static int UpdateStorageSpaceLevel(StorageSpaceLevel level)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "UpdateStorageSpaceLevel",
+                new SqlParameter("@ID", level.Id),
+                new SqlParameter("@Name", level.Name),
+                new SqlParameter("@Description", level.Description)
+            );
+
+            return level.Id;
+        }
+
+        public static int InsertStorageSpaceLevel(StorageSpaceLevel level)
+        {
+            SqlParameter id = new SqlParameter("@ID", SqlDbType.Int);
+            id.Direction = ParameterDirection.Output;
+
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "InsertStorageSpaceLevel",
+                id,
+                new SqlParameter("@Name", level.Name),
+                new SqlParameter("@Description", level.Description)
+            );
+
+            // read identity
+            return Convert.ToInt32(id.Value);
+        }
+
+        public static void RemoveStorageSpaceLevel(int id)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "RemoveStorageSpaceLevel",
+                new SqlParameter("@ID", id)
+            );
+        }
+
+        public static IDataReader GetStorageSpaceLevelResourceGroups(int levelId)
+        {
+            return SqlHelper.ExecuteReader(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetLevelResourceGroups",
+                new SqlParameter("@LevelId", levelId)
+            );
+        }
+
+        public static void RemoveStorageSpaceLevelResourceGroups(int levelId)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "DeleteLevelResourceGroups",
+                new SqlParameter("@LevelId", levelId)
+            );
+        }
+
+        public static void AddStorageSpaceLevelResourceGroup(int levelId, int groupId)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "AddLevelResourceGroups",
+                new SqlParameter("@LevelId", levelId),
+                new SqlParameter("@GroupId", groupId)
+            );
         }
 
         #endregion

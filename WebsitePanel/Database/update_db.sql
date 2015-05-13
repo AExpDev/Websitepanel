@@ -11227,3 +11227,240 @@ DEALLOCATE @curSpace
 CLOSE @curUsers
 DEALLOCATE @curUsers
 RETURN
+
+
+-- Storage Spaces
+
+--TODO REMOVE DROP
+IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevels')
+BEGIN
+DROP TABLE StorageSpaceLevels
+END
+
+IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevels')
+BEGIN
+	CREATE TABLE StorageSpaceLevels
+	(
+		Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		Name nvarchar(300) NOT NULL,
+		Description nvarchar(max) NOT NULL
+	)
+END
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name = 'GetStorageSpaceLevelsPaged')
+DROP PROCEDURE GetStorageSpaceLevelsPaged
+GO
+CREATE PROCEDURE [dbo].[GetStorageSpaceLevelsPaged]
+(
+	@FilterColumn nvarchar(50) = '',
+	@FilterValue nvarchar(50) = '',
+	@SortColumn nvarchar(50),
+	@StartRow int,
+	@MaximumRows int
+)
+AS
+-- build query and run it to the temporary table
+DECLARE @sql nvarchar(2000)
+
+SET @sql = '
+
+DECLARE @EndRow int
+SET @EndRow = @StartRow + @MaximumRows
+DECLARE @SSLevels TABLE
+(
+	ItemPosition int IDENTITY(0,1),
+	SSLevelId int
+)
+INSERT INTO @SSLevels (SSLevelId)
+SELECT
+	S.ID
+FROM StorageSpaceLevels AS S'
+
+IF @FilterColumn <> '' AND @FilterValue <> ''
+SET @sql = @sql + ' AND ' + @FilterColumn + ' LIKE @FilterValue '
+
+IF @SortColumn <> '' AND @SortColumn IS NOT NULL
+SET @sql = @sql + ' ORDER BY ' + @SortColumn + ' '
+
+SET @sql = @sql + ' SELECT COUNT(SSLevelId) FROM @SSLevels;
+SELECT
+	CR.ID,
+	CR.Name,
+	CR.Description
+FROM @SSLevels AS C
+INNER JOIN StorageSpaceLevels AS CR ON C.SSLevelId = CR.ID
+WHERE C.ItemPosition BETWEEN @StartRow AND @EndRow'
+
+exec sp_executesql @sql, N'@StartRow int, @MaximumRows int,  @FilterValue nvarchar(50)',
+@StartRow, @MaximumRows,  @FilterValue
+
+
+RETURN
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS  WHERE type = 'P' AND name = 'GetStorageSpaceLevelById')
+DROP PROCEDURE GetStorageSpaceLevelById
+GO
+CREATE PROCEDURE GetStorageSpaceLevelById 
+(
+@ID INT
+)
+AS
+SELECT TOP 1
+	SL.Id,
+	Sl.Name,
+	SL.Description
+FROM StorageSpaceLevels AS SL
+WHERE SL.Id = @ID
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type ='P' AND name ='UpdateStorageSpaceLevel')
+DROP PROCEDURE UpdateStorageSpaceLevel
+GO
+CREATE PROCEDURE UpdateStorageSpaceLevel
+(
+	@ID INT,
+	@Name nvarchar(300),
+	@Description nvarchar(max)
+)
+AS
+	UPDATE StorageSpaceLevels
+	SET Name = @Name, Description = @Description
+	WHERE ID = @ID
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type ='P' AND name ='InsertStorageSpaceLevel')
+	DROP PROCEDURE InsertStorageSpaceLevel
+GO
+CREATE PROCEDURE InsertStorageSpaceLevel
+(
+	@ID INT OUTPUT,
+	@Name nvarchar(300),
+	@Description nvarchar(max)
+)
+AS
+
+INSERT INTO StorageSpaceLevels 
+(
+	Name, 
+	Description
+)
+VALUES 
+(
+	@Name,
+	@Description
+)
+
+SET @ID = SCOPE_IDENTITY()
+
+RETURN
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type ='P' AND name = 'RemoveStorageSpaceLevel')
+	DROP PROCEDURE RemoveStorageSpaceLevel
+GO
+CREATE PROCEDURE RemoveStorageSpaceLevel
+(
+	@ID INT
+)
+AS
+	DELETE FROM StorageSpaceLevels WHERE ID = @ID
+GO
+
+
+--STORAGE SPACE LEVEL RESOURCE GROUPS
+
+--TODO Remove drop
+IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevelResourceGroups')
+BEGIN
+DROP TABLE StorageSpaceLevelResourceGroups
+END
+
+IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevelResourceGroups')
+BEGIN
+	CREATE TABLE StorageSpaceLevelResourceGroups
+	(
+		Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		LevelId INT NOT NULL,
+		GroupId INT NOT NULL
+	)
+END
+
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE type = 'F' AND name = 'FK_StorageSpaceLevelResourceGroups_LevelId')
+BEGIN
+	ALTER TABLE [dbo].[StorageSpaceLevelResourceGroups]
+	DROP CONSTRAINT [FK_StorageSpaceLevelResourceGroups_LevelId]
+END	
+
+ALTER TABLE [dbo].[StorageSpaceLevelResourceGroups]  WITH CHECK ADD  CONSTRAINT [FK_StorageSpaceLevelResourceGroups_LevelId] FOREIGN KEY([LevelId])
+REFERENCES [dbo].[StorageSpaceLevels] ([Id])
+ON DELETE CASCADE
+GO
+
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE type = 'F' AND name = 'FK_StorageSpaceLevelResourceGroups_GroupId')
+BEGIN
+	ALTER TABLE [dbo].[StorageSpaceLevelResourceGroups]
+	DROP CONSTRAINT [FK_StorageSpaceLevelResourceGroups_GroupId]
+END	
+
+ALTER TABLE [dbo].[StorageSpaceLevelResourceGroups]  WITH CHECK ADD  CONSTRAINT [FK_StorageSpaceLevelResourceGroups_GroupId] FOREIGN KEY([GroupID])
+REFERENCES [dbo].[ResourceGroups] ([GroupId])
+ON DELETE CASCADE
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type='P' AND name='GetLevelResourceGroups')
+	DROP PROCEDURE GetLevelResourceGroups
+GO
+
+CREATE PROCEDURE GetLevelResourceGroups
+(
+	@LevelId INT
+)
+AS
+	SELECT 
+	G.[GroupID],
+	G.[GroupName],
+	G.[GroupOrder],
+	G.[GroupController],
+	G.[ShowGroup]
+	FROM [dbo].[StorageSpaceLevelResourceGroups] AS SG
+	INNER JOIN [dbo].[ResourceGroups] AS G
+	ON SG.GroupId = G.GroupId
+	WHERE SG.LevelId = @LevelId
+GO
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type='P' AND name='DeleteLevelResourceGroups')
+	DROP PROCEDURE DeleteLevelResourceGroups
+GO
+
+CREATE PROCEDURE DeleteLevelResourceGroups
+(
+	@LevelId INT
+)
+AS
+	DELETE 
+	FROM [dbo].[StorageSpaceLevelResourceGroups]
+	WHERE LevelId = @LevelId
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type='P' AND name='AddLevelResourceGroups')
+	DROP PROCEDURE AddLevelResourceGroups
+GO
+
+CREATE PROCEDURE AddLevelResourceGroups
+(
+	@LevelId INT,
+	@GroupId INT
+)
+AS
+	INSERT INTO [dbo].[StorageSpaceLevelResourceGroups] (LevelId, GroupId)
+	VALUES (@LevelId, @GroupId)
+GO

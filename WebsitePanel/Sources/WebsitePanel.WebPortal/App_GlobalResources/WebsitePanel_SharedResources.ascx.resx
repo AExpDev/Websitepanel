@@ -4084,7 +4084,6 @@
   <data name="Error.VPS_ERROR_GET_VM_REPLICATION" xml:space="preserve">
     <value>Cannot get replication for the virtual machine</value>
   </data>
-  
   <data name="Error.VPS_SET_REPLICA_SERVER_ERROR" xml:space="preserve">
     <value>Cannot set replication for the server</value>
   </data>
@@ -4124,7 +4123,6 @@
   <data name="Error.VPS_QUOTA_REPLICATION_ENABLED" xml:space="preserve">
     <value>Replications is not allowed in the hosting plan</value>
   </data>
-  
   <data name="VPS.VPS_JOB_FAILED_ERROR" xml:space="preserve">
     <value>Job execution failed with the following code: {1}</value>
   </data>
@@ -5876,5 +5874,17 @@
   </data>
   <data name="SearchObject.NOT_FOUND" xml:space="preserve">
     <value>Not found</value>
+  </data>
+  <data name="Error.STORAGE_SPACES_LEVEL_REMOVE" xml:space="preserve">
+    <value>Error removing storage space level</value>
+  </data>
+  <data name="Error.STORAGE_SPACE_LEVEL_SAVE" xml:space="preserve">
+    <value>Error saving storage space level</value>
+  </data>
+  <data name="Success.STORAGE_SPACES_LEVEL_REMOVE" xml:space="preserve">
+    <value>Storage space level successfully removed</value>
+  </data>
+  <data name="Success.STORAGE_SPACE_LEVEL_SAVE" xml:space="preserve">
+    <value>Storage space level successfully saved</value>
   </data>
 </root>
