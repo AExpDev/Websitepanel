@@ -78,5 +78,10 @@ namespace WebsitePanel.Portal.StorageSpaces
         {
             Response.Redirect(EditUrl("SsLevelId", levelId, "edit_storage_space_level"));
         }
+
+        protected bool CheckLevelIsInUse(int levelId)
+        {
+            return ES.Services.StorageSpaces.GetStorageSpacesByLevelId(levelId).Any();
+        }
     }
 }

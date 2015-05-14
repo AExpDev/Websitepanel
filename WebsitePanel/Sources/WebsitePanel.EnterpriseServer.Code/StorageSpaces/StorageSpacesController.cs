@@ -11,6 +11,7 @@ namespace WebsitePanel.EnterpriseServer
 {
     public class StorageSpacesController
     {
+        #region Storage Spaces Levels
         public static StorageSpaceLevelPaged GetStorageSpaceLevelsPaged(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
         {
             return GetStorageSpaceLevelsPagedInternal(filterColumn, filterValue, sortColumn, startRow, maximumRows);
@@ -22,7 +23,7 @@ namespace WebsitePanel.EnterpriseServer
 
             var result = new StorageSpaceLevelPaged
             {
-                RecordsCount = (int) ds.Tables[0].Rows[0][0]
+                RecordsCount = (int)ds.Tables[0].Rows[0][0]
             };
 
             var tmpLevels = new List<StorageSpaceLevel>();
@@ -157,7 +158,7 @@ namespace WebsitePanel.EnterpriseServer
             return ObjectUtils.CreateListFromDataReader<ResourceGroupInfo>(DataProvider.GetStorageSpaceLevelResourceGroups(levelId)).ToList();
         }
 
-        public static ResultObject SaveLevelResourceGroups(int levelId,  List<ResourceGroupInfo> newGroups)
+        public static ResultObject SaveLevelResourceGroups(int levelId, List<ResourceGroupInfo> newGroups)
         {
             return SaveLevelResourceGroupsInternal(levelId, newGroups);
         }
@@ -202,6 +203,153 @@ namespace WebsitePanel.EnterpriseServer
             }
 
             return result;
+        } 
+        #endregion
+
+        #region Storage Spaces
+
+        public static StorageSpacesPaged GetStorageSpacesPaged(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
+        {
+            return GetStorageSpacePagedInternal(filterColumn, filterValue, sortColumn, startRow, maximumRows);
         }
+
+        private static StorageSpacesPaged GetStorageSpacePagedInternal(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
+        {
+            DataSet ds = DataProvider.GetStorageSpacesPaged(filterColumn, filterValue, sortColumn, startRow, maximumRows);
+
+            var result = new StorageSpacesPaged
+            {
+                RecordsCount = (int)ds.Tables[0].Rows[0][0]
+            };
+
+            var spaces = new List<StorageSpace>();
+
+            ObjectUtils.FillCollectionFromDataView(spaces, ds.Tables[1].DefaultView);
+
+            result.Spaces = spaces.ToArray();
+
+            return result;
+        }
+
+        public static List<StorageSpace> GetStorageSpacesByLevelId(int levelId)
+        {
+            return GetStorageSpacesByLevelIdInternal(levelId);
+        }
+
+        private static List<StorageSpace> GetStorageSpacesByLevelIdInternal(int levelId)
+        {
+            DataSet ds = DataProvider.GetStorageSpacesByLevelId(levelId);
+
+            var spaces = new List<StorageSpace>();
+
+            ObjectUtils.FillCollectionFromDataView(spaces, ds.Tables[0].DefaultView);
+
+            return spaces;
+        }
+
+        public static StorageSpace GetStorageSpaceById(int id)
+        {
+            return GetStorageSpaceByIdInternal(id);
+        }
+
+        private static StorageSpace GetStorageSpaceByIdInternal(int id)
+        {
+            return ObjectUtils.FillObjectFromDataReader<StorageSpace>(DataProvider.GetStorageSpaceById(id));
+        }
+
+        public static IntResult SaveStorageSpace(StorageSpace space)
+        {
+            return SaveStorageSpaceInternal(space);
+        }
+
+        private static IntResult SaveStorageSpaceInternal(StorageSpace space)
+        {
+
+            var result = TaskManager.StartResultTask<IntResult>("STORAGE_SPACES", "SAVE_STORAGE_SPACE");
+
+            try
+            {
+                if (space == null)
+                {
+                    throw new ArgumentNullException("space");
+                }
+
+                if (space.Id > 0)
+                {
+                    DataProvider.UpdateStorageSpace(space);
+
+                    TaskManager.Write("Updating Storage Space with id = {0}", space.Id.ToString(CultureInfo.InvariantCulture));
+
+                    result.Value = space.Id;
+                }
+                else
+                {
+                    result.Value = DataProvider.InsertStorageSpace(space);
+                    TaskManager.Write("Inserting new Storage Space, obtained id = {0}", space.Id.ToString(CultureInfo.InvariantCulture));
+
+                    space.Id = result.Value;
+                }
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error saving Storage Space", exception);
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static ResultObject RemoveStorageSpace(int id)
+        {
+            return RemoveStorageSpaceInternal(id);
+        }
+
+        private static ResultObject RemoveStorageSpaceInternal(int id)
+        {
+
+            var result = TaskManager.StartResultTask<ResultObject>("STORAGE_SPACES", "REMOVE_STORAGE_SPACE");
+
+            try
+            {
+                if (id < 1)
+                {
+                    throw new ArgumentException("Id must be greater than 0");
+                }
+
+                DataProvider.RemoveStorageSpace(id);
+
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error removing Storage Space", exception);
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
     }
 }

@@ -11231,6 +11231,24 @@ RETURN
 
 -- Storage Spaces
 
+IF NOT EXISTS (SELECT * FROM [dbo].[ResourceGroups] WHERE [GroupName] = 'Storage Spaces')
+BEGIN
+INSERT [dbo].[ResourceGroups] ([GroupID], [GroupName], [GroupOrder], [GroupController], [ShowGroup]) VALUES (49, N'StorageSpaceServices', 26, N'WebsitePanel.EnterpriseServer.StorageSpacesController', 1)
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM [dbo].[Providers] WHERE [DisplayName] = 'Storage Spaces Windows 2012')
+BEGIN
+INSERT [dbo].[Providers] ([ProviderId], [GroupId], [ProviderName], [DisplayName], [ProviderType], [EditorControl], [DisableAutoDiscovery]) VALUES(700, 49, N'StorageSpace2012', N'Storage Spaces Windows 2012', N'WebsitePanel.Providers.StorageSpaces.Windows2012, WebsitePanel.Providers.StorageSpaces.Windows2012', N'StorageSpaceServices',	1)
+END
+ELSE
+BEGIN
+UPDATE [dbo].[Providers] SET [DisableAutoDiscovery] = NULL WHERE [DisplayName] = 'Storage Spaces Windows 2012'
+END
+GO
+
+
+-- STORAGE SPACE LEVELS
 --TODO REMOVE DROP
 IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevels')
 BEGIN
@@ -11304,6 +11322,23 @@ IF EXISTS (SELECT * FROM SYS.OBJECTS  WHERE type = 'P' AND name = 'GetStorageSpa
 DROP PROCEDURE GetStorageSpaceLevelById
 GO
 CREATE PROCEDURE GetStorageSpaceLevelById 
+(
+@ID INT
+)
+AS
+SELECT TOP 1
+	SL.Id,
+	Sl.Name,
+	SL.Description
+FROM StorageSpaceLevels AS SL
+WHERE SL.Id = @ID
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS  WHERE type = 'P' AND name = 'GetStorageSpacesByLevelId')
+DROP PROCEDURE GetStorageSpacesByLevelId
+GO
+CREATE PROCEDURE GetStorageSpacesByLevelId 
 (
 @ID INT
 )
@@ -11463,4 +11498,235 @@ CREATE PROCEDURE AddLevelResourceGroups
 AS
 	INSERT INTO [dbo].[StorageSpaceLevelResourceGroups] (LevelId, GroupId)
 	VALUES (@LevelId, @GroupId)
+GO
+
+
+--STORAGE SPACES
+
+
+--TODO Remove drop
+IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaces')
+BEGIN
+DROP TABLE StorageSpaces
+END
+
+IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaces')
+BEGIN
+	CREATE TABLE StorageSpaces
+	(
+		Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		Name varchar(300) NOT NULL,
+		ServiceId INT NOT NULL,
+		ServerId INT NOT NULL,
+		LevelId INT NOT NULL,
+		Path varchar(max) NOT NULL,
+		FsrmQuotaType INT NOT NULL,
+		FsrmQuotaSizeBytes BIGINT NOT NULL
+	)
+END
+
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE type = 'F' AND name = 'FK_StorageSpaces_ServiceId')
+BEGIN
+	ALTER TABLE [dbo].[StorageSpaces]
+	DROP CONSTRAINT [FK_StorageSpaces_ServiceId]
+END	
+
+ALTER TABLE [dbo].[StorageSpaces]  WITH CHECK ADD  CONSTRAINT [FK_StorageSpaces_ServiceId] FOREIGN KEY([ServiceId])
+REFERENCES [dbo].[Services] ([ServiceID])
+ON DELETE CASCADE
+GO
+
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE type = 'F' AND name = 'FK_StorageSpaces_ServerId')
+BEGIN
+	ALTER TABLE [dbo].[StorageSpaces]
+	DROP CONSTRAINT [FK_StorageSpaces_ServerId]
+END	
+
+ALTER TABLE [dbo].[StorageSpaces]  WITH CHECK ADD  CONSTRAINT [FK_StorageSpaces_ServerId] FOREIGN KEY([ServerId])
+REFERENCES [dbo].[Servers] ([ServerID])
+ON DELETE CASCADE
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name = 'GetStorageSpacesPaged')
+DROP PROCEDURE GetStorageSpacesPaged
+GO
+CREATE PROCEDURE [dbo].[GetStorageSpacesPaged]
+(
+	@FilterColumn nvarchar(50) = '',
+	@FilterValue nvarchar(50) = '',
+	@SortColumn nvarchar(50),
+	@StartRow int,
+	@MaximumRows int
+)
+AS
+-- build query and run it to the temporary table
+DECLARE @sql nvarchar(2000)
+
+SET @sql = '
+
+DECLARE @EndRow int
+SET @EndRow = @StartRow + @MaximumRows
+DECLARE @Spaces TABLE
+(
+	ItemPosition int IDENTITY(0,1),
+	SpaceId int
+)
+INSERT INTO @Spaces (SpaceId)
+SELECT
+	S.Id
+FROM StorageSpaces AS S'
+
+IF @FilterColumn <> '' AND @FilterValue <> ''
+SET @sql = @sql + ' AND ' + @FilterColumn + ' LIKE @FilterValue '
+
+IF @SortColumn <> '' AND @SortColumn IS NOT NULL
+SET @sql = @sql + ' ORDER BY ' + @SortColumn + ' '
+
+SET @sql = @sql + ' SELECT COUNT(SpaceId) FROM @Spaces;
+SELECT
+		CR.Id,
+		CR.Name ,
+		CR.ServiceId ,
+		CR.ServerId ,
+		CR.LevelId,
+		CR.Path,
+		CR.FsrmQuotaType,
+		CR.FsrmQuotaSizeBytes
+FROM @Spaces AS C
+INNER JOIN StorageSpaces AS CR ON C.SpaceId = CR.Id
+WHERE C.ItemPosition BETWEEN @StartRow AND @EndRow'
+
+exec sp_executesql @sql, N'@StartRow int, @MaximumRows int,  @FilterValue nvarchar(50)',
+@StartRow, @MaximumRows,  @FilterValue
+
+
+RETURN
+GO
+
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS  WHERE type = 'P' AND name = 'GetStorageSpacesByLevelId')
+DROP PROCEDURE GetStorageSpacesByLevelId
+GO
+CREATE PROCEDURE GetStorageSpacesByLevelId 
+(
+	@LevelId INT
+)
+AS
+SELECT
+		SS.Id,
+		SS.Name ,
+		SS.ServiceId ,
+		SS.ServerId ,
+		SS.LevelId,
+		SS.Path,
+		SS.FsrmQuotaType,
+		SS.FsrmQuotaSizeBytes
+FROM StorageSpaces AS SS
+INNER JOIN StorageSpaceLevels AS SSL
+ON SSL.Id = SS.LevelId
+WHERE SS.LevelId = @LevelId
+GO
+
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type='P' AND name='GetStorageSpaceById')
+	DROP PROCEDURE GetStorageSpaceById
+GO
+
+CREATE PROCEDURE GetStorageSpaceById
+(
+	@Id INT
+)
+AS
+	SELECT TOP 1
+		SS.Id,
+		SS.Name ,
+		SS.ServiceId ,
+		SS.ServerId ,
+		SS.LevelId,
+		SS.Path,
+		SS.FsrmQuotaType,
+		SS.FsrmQuotaSizeBytes
+	FROM [dbo].[StorageSpaces] AS SS
+	WHERE SS.Id = @Id
+GO
+
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type ='P' AND name ='UpdateStorageSpace')
+DROP PROCEDURE UpdateStorageSpace
+GO
+CREATE PROCEDURE UpdateStorageSpace
+(
+	@ID INT,
+	@Name nvarchar(300),
+	@ServiceId INT ,
+	@ServerId INT,
+	@LevelId INT,
+	@Path varchar(max),
+	@FsrmQuotaType INT,
+	@FsrmQuotaSizeBytes BIGINT
+)
+AS
+	UPDATE StorageSpaces
+	SET Name = @Name, ServiceId = @ServiceId,ServerId=@ServerId,LevelId=@LevelId, Path=@Path,FsrmQuotaType=@FsrmQuotaType,FsrmQuotaSizeBytes=@FsrmQuotaSizeBytes
+	WHERE ID = @ID
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type ='P' AND name ='InsertStorageSpace')
+	DROP PROCEDURE InsertStorageSpace
+GO
+CREATE PROCEDURE InsertStorageSpace
+(
+	@ID INT OUTPUT,
+	@Name nvarchar(300),
+	@ServiceId INT ,
+	@ServerId INT,
+	@LevelId INT,
+	@Path varchar(max),
+	@FsrmQuotaType INT,
+	@FsrmQuotaSizeBytes BIGINT
+)
+AS
+
+INSERT INTO StorageSpaces 
+(
+	Name,
+	ServiceId,
+	ServerId,
+	LevelId,
+	Path,
+	FsrmQuotaType,
+	FsrmQuotaSizeBytes
+)
+VALUES 
+(
+	@Name,
+	@ServiceId,
+	@ServerId,
+	@LevelId,
+	@Path,
+	@FsrmQuotaType,
+	@FsrmQuotaSizeBytes
+)
+
+SET @ID = SCOPE_IDENTITY()
+
+RETURN
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type ='P' AND name = 'RemoveStorageSpace')
+	DROP PROCEDURE RemoveStorageSpace
+GO
+CREATE PROCEDURE RemoveStorageSpace
+(
+	@ID INT
+)
+AS
+	DELETE FROM StorageSpaces WHERE ID = @ID
 GO

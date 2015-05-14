@@ -4897,6 +4897,92 @@ namespace WebsitePanel.EnterpriseServer
             );
         }
 
+        public static DataSet GetStorageSpacesPaged(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
+        {
+            return SqlHelper.ExecuteDataset(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpacesPaged",
+                new SqlParameter("@FilterColumn", VerifyColumnName(filterColumn)),
+                new SqlParameter("@FilterValue", VerifyColumnValue(filterValue)),
+                new SqlParameter("@SortColumn", VerifyColumnName(sortColumn)),
+                new SqlParameter("@startRow", startRow),
+                new SqlParameter("@maximumRows", maximumRows)
+            );
+        }
+
+        public static IDataReader GetStorageSpaceById(int id)
+        {
+            return SqlHelper.ExecuteReader(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpaceById",
+                new SqlParameter("@ID", id)
+            );
+        }
+
+        public static int UpdateStorageSpace(StorageSpace space)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "UpdateStorageSpace",
+                new SqlParameter("@ID", space.Id),
+                new SqlParameter("@Name", space.Name),
+                new SqlParameter("@ServiceId", space.ServiceId),
+                new SqlParameter("@ServerId", space.ServerId),
+                new SqlParameter("@LevelId", space.LevelId),
+                new SqlParameter("@Path", space.Path),
+                new SqlParameter("@FsrmQuotaType", space.FsrmQuotaType),
+                new SqlParameter("@FsrmQuotaSizeBytes", space.FsrmQuotaSizeBytes)
+            );
+
+            return space.Id;
+        }
+
+        public static int InsertStorageSpace(StorageSpace space)
+        {
+            SqlParameter id = new SqlParameter("@ID", SqlDbType.Int);
+            id.Direction = ParameterDirection.Output;
+
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "InsertStorageSpace",
+                id,
+                new SqlParameter("@Name", space.Name),
+                new SqlParameter("@ServiceId", space.ServiceId),
+                new SqlParameter("@ServerId", space.ServerId),
+                new SqlParameter("@LevelId", space.LevelId),
+                new SqlParameter("@Path", space.Path),
+                new SqlParameter("@FsrmQuotaType", space.FsrmQuotaType),
+                new SqlParameter("@FsrmQuotaSizeBytes", space.FsrmQuotaSizeBytes)
+            );
+
+            // read identity
+            return Convert.ToInt32(id.Value);
+        }
+
+        public static void RemoveStorageSpace(int id)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "RemoveStorageSpace",
+                new SqlParameter("@ID", id)
+            );
+        }
+
+        public static DataSet GetStorageSpacesByLevelId(int levelId)
+        {
+            return SqlHelper.ExecuteDataset(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpacesByLevelId",
+                new SqlParameter("@LevelId", levelId)
+            );
+        }
+
         #endregion
 
         #region RDS

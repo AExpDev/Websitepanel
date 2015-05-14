@@ -55,5 +55,35 @@ namespace WebsitePanel.EnterpriseServer
         {
             return StorageSpacesController.RemoveStorageSpaceLevel(id);
         }
+
+        [WebMethod]
+        public StorageSpacesPaged GetStorageSpacesPaged(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
+        {
+            return StorageSpacesController.GetStorageSpacesPaged(filterColumn, filterValue, sortColumn, startRow, maximumRows);
+        }
+
+        [WebMethod]
+        public List<StorageSpace> GetStorageSpacesByLevelId(int levelId)
+        {
+            return StorageSpacesController.GetStorageSpacesByLevelId(levelId);
+        }
+
+        [WebMethod]
+        public StorageSpace GetStorageSpaceById(int id)
+        {
+            return StorageSpacesController.GetStorageSpaceById(id);
+        }
+
+        [WebMethod]
+        public IntResult SaveStorageSpace(StorageSpace space)
+        {
+            return StorageSpacesController.SaveStorageSpace(space);
+        }
+
+        [WebMethod]
+        public ResultObject RemoveStorageSpace(int id)
+        {
+            return StorageSpacesController.RemoveStorageSpace(id);
+        }
     }
 }

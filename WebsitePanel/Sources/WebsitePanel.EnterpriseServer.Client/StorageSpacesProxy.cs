@@ -44,6 +44,16 @@ namespace WebsitePanel.EnterpriseServer {
         
         private System.Threading.SendOrPostCallback RemoveStorageSpaceLevelOperationCompleted;
         
+        private System.Threading.SendOrPostCallback GetStorageSpacesPagedOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback GetStorageSpacesByLevelIdOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback GetStorageSpaceByIdOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback SaveStorageSpaceOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback RemoveStorageSpaceOperationCompleted;
+        
         /// <remarks/>
         public esStorageSpaces() {
             this.Url = "http://localhost:9002/esStorageSpaces.asmx";
@@ -66,6 +76,21 @@ namespace WebsitePanel.EnterpriseServer {
         
         /// <remarks/>
         public event RemoveStorageSpaceLevelCompletedEventHandler RemoveStorageSpaceLevelCompleted;
+        
+        /// <remarks/>
+        public event GetStorageSpacesPagedCompletedEventHandler GetStorageSpacesPagedCompleted;
+        
+        /// <remarks/>
+        public event GetStorageSpacesByLevelIdCompletedEventHandler GetStorageSpacesByLevelIdCompleted;
+        
+        /// <remarks/>
+        public event GetStorageSpaceByIdCompletedEventHandler GetStorageSpaceByIdCompleted;
+        
+        /// <remarks/>
+        public event SaveStorageSpaceCompletedEventHandler SaveStorageSpaceCompleted;
+        
+        /// <remarks/>
+        public event RemoveStorageSpaceCompletedEventHandler RemoveStorageSpaceCompleted;
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetStorageSpaceLevelsPaged", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
@@ -332,6 +357,223 @@ namespace WebsitePanel.EnterpriseServer {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetStorageSpacesPaged", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public StorageSpacesPaged GetStorageSpacesPaged(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows) {
+            object[] results = this.Invoke("GetStorageSpacesPaged", new object[] {
+                        filterColumn,
+                        filterValue,
+                        sortColumn,
+                        startRow,
+                        maximumRows});
+            return ((StorageSpacesPaged)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginGetStorageSpacesPaged(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("GetStorageSpacesPaged", new object[] {
+                        filterColumn,
+                        filterValue,
+                        sortColumn,
+                        startRow,
+                        maximumRows}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public StorageSpacesPaged EndGetStorageSpacesPaged(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((StorageSpacesPaged)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpacesPagedAsync(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows) {
+            this.GetStorageSpacesPagedAsync(filterColumn, filterValue, sortColumn, startRow, maximumRows, null);
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpacesPagedAsync(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows, object userState) {
+            if ((this.GetStorageSpacesPagedOperationCompleted == null)) {
+                this.GetStorageSpacesPagedOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetStorageSpacesPagedOperationCompleted);
+            }
+            this.InvokeAsync("GetStorageSpacesPaged", new object[] {
+                        filterColumn,
+                        filterValue,
+                        sortColumn,
+                        startRow,
+                        maximumRows}, this.GetStorageSpacesPagedOperationCompleted, userState);
+        }
+        
+        private void OnGetStorageSpacesPagedOperationCompleted(object arg) {
+            if ((this.GetStorageSpacesPagedCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetStorageSpacesPagedCompleted(this, new GetStorageSpacesPagedCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetStorageSpacesByLevelId", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public StorageSpace[] GetStorageSpacesByLevelId(int levelId) {
+            object[] results = this.Invoke("GetStorageSpacesByLevelId", new object[] {
+                        levelId});
+            return ((StorageSpace[])(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginGetStorageSpacesByLevelId(int levelId, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("GetStorageSpacesByLevelId", new object[] {
+                        levelId}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public StorageSpace[] EndGetStorageSpacesByLevelId(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((StorageSpace[])(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpacesByLevelIdAsync(int levelId) {
+            this.GetStorageSpacesByLevelIdAsync(levelId, null);
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpacesByLevelIdAsync(int levelId, object userState) {
+            if ((this.GetStorageSpacesByLevelIdOperationCompleted == null)) {
+                this.GetStorageSpacesByLevelIdOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetStorageSpacesByLevelIdOperationCompleted);
+            }
+            this.InvokeAsync("GetStorageSpacesByLevelId", new object[] {
+                        levelId}, this.GetStorageSpacesByLevelIdOperationCompleted, userState);
+        }
+        
+        private void OnGetStorageSpacesByLevelIdOperationCompleted(object arg) {
+            if ((this.GetStorageSpacesByLevelIdCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetStorageSpacesByLevelIdCompleted(this, new GetStorageSpacesByLevelIdCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetStorageSpaceById", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public StorageSpace GetStorageSpaceById(int id) {
+            object[] results = this.Invoke("GetStorageSpaceById", new object[] {
+                        id});
+            return ((StorageSpace)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginGetStorageSpaceById(int id, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("GetStorageSpaceById", new object[] {
+                        id}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public StorageSpace EndGetStorageSpaceById(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((StorageSpace)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpaceByIdAsync(int id) {
+            this.GetStorageSpaceByIdAsync(id, null);
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpaceByIdAsync(int id, object userState) {
+            if ((this.GetStorageSpaceByIdOperationCompleted == null)) {
+                this.GetStorageSpaceByIdOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetStorageSpaceByIdOperationCompleted);
+            }
+            this.InvokeAsync("GetStorageSpaceById", new object[] {
+                        id}, this.GetStorageSpaceByIdOperationCompleted, userState);
+        }
+        
+        private void OnGetStorageSpaceByIdOperationCompleted(object arg) {
+            if ((this.GetStorageSpaceByIdCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetStorageSpaceByIdCompleted(this, new GetStorageSpaceByIdCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/SaveStorageSpace", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public IntResult SaveStorageSpace(StorageSpace space) {
+            object[] results = this.Invoke("SaveStorageSpace", new object[] {
+                        space});
+            return ((IntResult)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginSaveStorageSpace(StorageSpace space, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("SaveStorageSpace", new object[] {
+                        space}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public IntResult EndSaveStorageSpace(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((IntResult)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void SaveStorageSpaceAsync(StorageSpace space) {
+            this.SaveStorageSpaceAsync(space, null);
+        }
+        
+        /// <remarks/>
+        public void SaveStorageSpaceAsync(StorageSpace space, object userState) {
+            if ((this.SaveStorageSpaceOperationCompleted == null)) {
+                this.SaveStorageSpaceOperationCompleted = new System.Threading.SendOrPostCallback(this.OnSaveStorageSpaceOperationCompleted);
+            }
+            this.InvokeAsync("SaveStorageSpace", new object[] {
+                        space}, this.SaveStorageSpaceOperationCompleted, userState);
+        }
+        
+        private void OnSaveStorageSpaceOperationCompleted(object arg) {
+            if ((this.SaveStorageSpaceCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.SaveStorageSpaceCompleted(this, new SaveStorageSpaceCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/RemoveStorageSpace", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public ResultObject RemoveStorageSpace(int id) {
+            object[] results = this.Invoke("RemoveStorageSpace", new object[] {
+                        id});
+            return ((ResultObject)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginRemoveStorageSpace(int id, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("RemoveStorageSpace", new object[] {
+                        id}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public ResultObject EndRemoveStorageSpace(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((ResultObject)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void RemoveStorageSpaceAsync(int id) {
+            this.RemoveStorageSpaceAsync(id, null);
+        }
+        
+        /// <remarks/>
+        public void RemoveStorageSpaceAsync(int id, object userState) {
+            if ((this.RemoveStorageSpaceOperationCompleted == null)) {
+                this.RemoveStorageSpaceOperationCompleted = new System.Threading.SendOrPostCallback(this.OnRemoveStorageSpaceOperationCompleted);
+            }
+            this.InvokeAsync("RemoveStorageSpace", new object[] {
+                        id}, this.RemoveStorageSpaceOperationCompleted, userState);
+        }
+        
+        private void OnRemoveStorageSpaceOperationCompleted(object arg) {
+            if ((this.RemoveStorageSpaceCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.RemoveStorageSpaceCompleted(this, new RemoveStorageSpaceCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
         public new void CancelAsync(object userState) {
             base.CancelAsync(userState);
         }
@@ -480,6 +722,136 @@ namespace WebsitePanel.EnterpriseServer {
         private object[] results;
         
         internal RemoveStorageSpaceLevelCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public ResultObject Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((ResultObject)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void GetStorageSpacesPagedCompletedEventHandler(object sender, GetStorageSpacesPagedCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetStorageSpacesPagedCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetStorageSpacesPagedCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public StorageSpacesPaged Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((StorageSpacesPaged)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void GetStorageSpacesByLevelIdCompletedEventHandler(object sender, GetStorageSpacesByLevelIdCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetStorageSpacesByLevelIdCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetStorageSpacesByLevelIdCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public StorageSpace[] Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((StorageSpace[])(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void GetStorageSpaceByIdCompletedEventHandler(object sender, GetStorageSpaceByIdCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetStorageSpaceByIdCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetStorageSpaceByIdCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public StorageSpace Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((StorageSpace)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void SaveStorageSpaceCompletedEventHandler(object sender, SaveStorageSpaceCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class SaveStorageSpaceCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal SaveStorageSpaceCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public IntResult Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((IntResult)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void RemoveStorageSpaceCompletedEventHandler(object sender, RemoveStorageSpaceCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class RemoveStorageSpaceCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal RemoveStorageSpaceCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
                 base(exception, cancelled, userState) {
             this.results = results;
         }

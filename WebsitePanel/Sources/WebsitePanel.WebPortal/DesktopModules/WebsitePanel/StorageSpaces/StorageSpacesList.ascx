@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="SpaceStorageLevelsList.ascx.cs" Inherits="WebsitePanel.Portal.StorageSpaces.SpaceStorageLevelsList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeBehind="StorageSpacesList.ascx.cs" Inherits="WebsitePanel.Portal.StorageSpaces.StorageSpacesList" %>
 
 <%@ Import Namespace="WebsitePanel.Portal" %>
 <%@ Register Src="../UserControls/Comments.ascx" TagName="Comments" TagPrefix="uc4" %>
@@ -19,9 +19,9 @@
 
 <div class="FormButtonsBar">
     <div class="Left">
-        <asp:Button ID="btnAddSsLevel" runat="server"
-            meta:resourcekey="btnAddSsLevel" Text="Add Storage Service Level" CssClass="Button3"
-            OnClick="btnAddSsLevel_Click" />
+        <asp:Button ID="btnAddStoragSpace" runat="server"
+            meta:resourcekey="btnAddStoragSpace" Text="Add Storage Space" CssClass="Button3"
+            OnClick="btnAddStoragSpace_Click" />
     </div>
     <div class="Right">
         <asp:Panel ID="SearchPanel" runat="server" DefaultButton="cmdSearch">
@@ -40,35 +40,49 @@
     </div>
 </div>
 
-<asp:ObjectDataSource ID="odsSsLevelsPaged" runat="server" EnablePaging="True" SelectCountMethod="GetStorageSpaceLevelsPagedCount"
-    SelectMethod="GetStorageSpaceLevelsPaged" SortParameterName="sortColumn" TypeName="WebsitePanel.Portal.SsHelper" OnSelected="odsRDSServersPaged_Selected">
+<asp:ObjectDataSource ID="odsStorageSpacesPaged" runat="server" EnablePaging="True" SelectCountMethod="GetStorageSpacePagedCount"
+    SelectMethod="GetStorageSpacePaged" SortParameterName="sortColumn" TypeName="WebsitePanel.Portal.SsHelper" OnSelected="odsStorageSpacesPaged_Selected">
     <SelectParameters>
         <asp:ControlParameter Name="filterValue" ControlID="txtSearchValue" PropertyName="Text" />
     </SelectParameters>
 </asp:ObjectDataSource>
 
-<asp:GridView ID="gvSsLevels" runat="server" AutoGenerateColumns="False"
-    AllowPaging="True" AllowSorting="True"
+<asp:GridView ID="gvStorageSpaces" runat="server" AutoGenerateColumns="False"
+    AllowPaging="True" AllowSorting="False"
     CssSelectorClass="NormalGridView"
-    OnRowCommand="gvSsLevels_RowCommand"
-    DataSourceID="odsSsLevelsPaged" EnableViewState="False"
-    EmptyDataText="gvRDSServers">
+    OnRowCommand="gvStorageSpaces_RowCommand"
+    DataSourceID="odsStorageSpacesPaged" EnableViewState="False"
+    EmptyDataText="gvStorageSpaces">
     <Columns>
-        <asp:TemplateField SortExpression="Name" HeaderText="Level name">
+        <asp:TemplateField SortExpression="Name" HeaderText="Space name">
             <HeaderStyle Wrap="false" />
-            <ItemStyle Wrap="False" Width="50%" />
+            <ItemStyle Wrap="False" Width="30%" />
             <ItemTemplate>
-                <asp:LinkButton OnClientClick="ShowProgressDialog('Loading ...');return true;" CommandName="EditSsLevel" CommandArgument='<%# Eval("Id")%>' ID="lbEditSsLevel" runat="server" Text='<%#Eval("Name") %>' />
+                <asp:LinkButton OnClientClick="ShowProgressDialog('Loading ...');return true;" CommandName="EditStorageSpace" CommandArgument='<%# Eval("Id")%>' ID="lbEditStorageSpace" runat="server" Text='<%#Eval("Name") %>' />
             </ItemTemplate>
         </asp:TemplateField>
-        <asp:BoundField DataField="Description" HeaderText="Description">
-            <ItemStyle Width="35%" />
-        </asp:BoundField>
+        
+        <asp:TemplateField SortExpression="ServiceId" HeaderText="Service name">
+            <HeaderStyle Wrap="false" />
+            <ItemStyle Wrap="False" Width="30%" />
+            <ItemTemplate>
+                <asp:Label runat="server"><%# GetServiceName(Utils.ParseInt(Eval("ServiceId"), 0))%></asp:Label>
+            </ItemTemplate>
+        </asp:TemplateField>
+        
+       <asp:TemplateField SortExpression="FsrmQuotaSizeBytes" HeaderText="Allocated Space">
+            <HeaderStyle Wrap="false" />
+            <ItemStyle Wrap="False" Width="30%" />
+            <ItemTemplate>
+                <asp:Label runat="server"><%# (ConvertBytesToGB(Eval("FsrmQuotaSizeBytes"))) + " Gb"%></asp:Label>
+            </ItemTemplate>
+        </asp:TemplateField>
+
         <asp:TemplateField>
             <ItemTemplate>
-                <asp:LinkButton ID="lnkRemove" runat="server" Text="Remove" Visible='<%# CheckLevelIsInUse(Utils.ParseInt(Eval("Id"), -1)) == false %>'
+                <asp:LinkButton ID="lnkRemove" runat="server" Text="Remove"
                     CommandName="DeleteItem" CommandArgument='<%# Eval("Id") %>'
-                    meta:resourcekey="cmdDelete" OnClientClick="return confirm('Are you sure you want to delete selected space storage level server??');"></asp:LinkButton>
+                    meta:resourcekey="cmdDelete" OnClientClick="return confirm('Are you sure you want to delete selected storage space?');"></asp:LinkButton>
             </ItemTemplate>
         </asp:TemplateField>
     </Columns>

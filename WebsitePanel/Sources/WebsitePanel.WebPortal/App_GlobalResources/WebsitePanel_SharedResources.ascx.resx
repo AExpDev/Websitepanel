@@ -5887,4 +5887,13 @@
   <data name="Success.STORAGE_SPACE_LEVEL_SAVE" xml:space="preserve">
     <value>Storage space level successfully saved</value>
   </data>
+  <data name="ResourceGroup.StorageSpaceServices" xml:space="preserve">
+    <value>Storage Space Services</value>
+  </data>
+  <data name="Error.STORAGE_SPACE_SAVE" xml:space="preserve">
+    <value>Error saving storage space</value>
+  </data>
+  <data name="Success.STORAGE_SPACE_SAVE" xml:space="preserve">
+    <value>Storage space successfully saved</value>
+  </data>
 </root>

@@ -223,5 +223,10 @@ namespace WebsitePanel.Portal
         {
             get { return GetInt("SsLevelId"); }
         }
+
+        public static int StorageSpaceId
+        {
+            get { return GetInt("StorageSpaceId"); }
+        }
     }
 }
