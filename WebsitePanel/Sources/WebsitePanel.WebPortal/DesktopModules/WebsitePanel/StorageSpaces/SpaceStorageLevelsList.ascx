@@ -20,7 +20,7 @@
 <div class="FormButtonsBar">
     <div class="Left">
         <asp:Button ID="btnAddSsLevel" runat="server"
-            meta:resourcekey="btnAddSsLevel" Text="Add Storage Service Level" CssClass="Button3"
+            meta:resourcekey="btnAddSsLevel" Text="Add Storage Space Level" CssClass="Button3"
             OnClick="btnAddSsLevel_Click" />
     </div>
     <div class="Right">
@@ -68,7 +68,7 @@
             <ItemTemplate>
                 <asp:LinkButton ID="lnkRemove" runat="server" Text="Remove" Visible='<%# CheckLevelIsInUse(Utils.ParseInt(Eval("Id"), -1)) == false %>'
                     CommandName="DeleteItem" CommandArgument='<%# Eval("Id") %>'
-                    meta:resourcekey="cmdDelete" OnClientClick="return confirm('Are you sure you want to delete selected space storage level server??');"></asp:LinkButton>
+                    meta:resourcekey="cmdDelete" OnClientClick="return confirm('Are you sure you want to delete selected storage space level?');"></asp:LinkButton>
             </ItemTemplate>
         </asp:TemplateField>
     </Columns>

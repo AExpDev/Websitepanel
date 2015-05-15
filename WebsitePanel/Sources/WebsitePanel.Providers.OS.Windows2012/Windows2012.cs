@@ -300,11 +300,42 @@ namespace WebsitePanel.Providers.OS
 
             ExecuteShellCommand(runSpace, cmd, false);
         }
-        
+
+        public override bool InstallFsrmService()
+        {
+            Log.WriteStart("InstallFsrmService");
+
+            Runspace runSpace = null;
+            try
+            {
+                runSpace = OpenRunspace();
+
+                Command cmd = new Command("Install-WindowsFeature");
+                cmd.Parameters.Add("Name", "FS-Resource-Manager");
+                cmd.Parameters.Add("IncludeManagementTools", true);
+
+                ExecuteShellCommand(runSpace, cmd, false);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError("InstallFsrmService", ex);
+
+                return false;
+            }
+            finally
+            {
+                Log.WriteEnd("InstallFsrmService");
+
+                CloseRunspace(runSpace);
+            }
+
+            return true;
+        }
+
         #region PowerShell integration
         private static InitialSessionState session = null;
 
-        internal virtual Runspace OpenRunspace()
+        protected virtual Runspace OpenRunspace()
         {
              Log.WriteStart("OpenRunspace");
 
@@ -322,7 +353,7 @@ namespace WebsitePanel.Providers.OS
             return runSpace;
         }
 
-        internal void CloseRunspace(Runspace runspace)
+        protected void CloseRunspace(Runspace runspace)
         {
             try
             {
@@ -337,7 +368,7 @@ namespace WebsitePanel.Providers.OS
             }
         }
 
-        internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd)
+        protected Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd)
         {
             return ExecuteShellCommand(runSpace, cmd, true);
         }

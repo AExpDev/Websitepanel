@@ -16,7 +16,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\WebsitePanel.Server\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,6 +32,10 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\webdavsiteimp\WebsitePanel\Lib\System.Management.Automation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,6 +50,14 @@
     <ProjectReference Include="..\WebsitePanel.Providers.Base\WebsitePanel.Providers.Base.csproj">
       <Project>{684c932a-6c75-46ac-a327-f3689d89eb42}</Project>
       <Name>WebsitePanel.Providers.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WebsitePanel.Providers.OS.Windows2003\WebsitePanel.Providers.OS.Windows2003.csproj">
+      <Project>{899b3048-46be-4c4d-9d41-0043c8b0d11e}</Project>
+      <Name>WebsitePanel.Providers.OS.Windows2003</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WebsitePanel.Providers.OS.Windows2012\WebsitePanel.Providers.OS.Windows2012.csproj">
+      <Project>{27130bbb-76fa-411e-8b4d-51cd4dc821af}</Project>
+      <Name>WebsitePanel.Providers.OS.Windows2012</Name>
     </ProjectReference>
     <ProjectReference Include="..\WebsitePanel.Server.Utils\WebsitePanel.Server.Utils.csproj">
       <Project>{e91e52f3-9555-4d00-b577-2b1dbdd87ca7}</Project>

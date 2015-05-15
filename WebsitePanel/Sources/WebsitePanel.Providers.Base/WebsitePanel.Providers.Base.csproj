@@ -300,6 +300,7 @@
     <Compile Include="Statistics\StatsServer.cs" />
     <Compile Include="Statistics\StatsSite.cs" />
     <Compile Include="Statistics\StatsUser.cs" />
+    <Compile Include="StorageSpaces\IStorageSpace.cs" />
     <Compile Include="StorageSpaces\StorageSpace.cs" />
     <Compile Include="StorageSpaces\StorageSpaceLevel.cs" />
     <Compile Include="StorageSpaces\StorageSpaceLevelPaged.cs" />

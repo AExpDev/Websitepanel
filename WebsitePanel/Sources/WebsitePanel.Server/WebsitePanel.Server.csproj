@@ -240,6 +240,8 @@
     <Content Include="bin\WebsitePanel.Providers.Statistics.AWStats.pdb" />
     <Content Include="bin\WebsitePanel.Providers.Statistics.SmarterStats.dll" />
     <Content Include="bin\WebsitePanel.Providers.Statistics.SmarterStats.pdb" />
+    <Content Include="bin\WebsitePanel.Providers.StorageSpaces.Windows2012.dll" />
+    <Content Include="bin\WebsitePanel.Providers.StorageSpaces.Windows2012.pdb" />
     <Content Include="bin\WebsitePanel.Providers.Virtualization.HyperV.dll" />
     <Content Include="bin\WebsitePanel.Providers.Virtualization.HyperV.pdb" />
     <Content Include="bin\WebsitePanel.Providers.VirtualizationForPC.HyperVForPC.dll" />

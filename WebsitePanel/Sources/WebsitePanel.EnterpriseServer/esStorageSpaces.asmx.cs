@@ -6,6 +6,7 @@ using System.Web;
 using System.Web.Services;
 using Microsoft.Web.Services3;
 using WebsitePanel.Providers.Common;
+using WebsitePanel.Providers.OS;
 using WebsitePanel.Providers.ResultObjects;
 using WebsitePanel.Providers.StorageSpaces;
 
@@ -84,6 +85,18 @@ namespace WebsitePanel.EnterpriseServer
         public ResultObject RemoveStorageSpace(int id)
         {
             return StorageSpacesController.RemoveStorageSpace(id);
+        }
+
+        [WebMethod]
+        public SystemFile[] GetDriveLetters(int serviceId)
+        {
+            return StorageSpacesController.GetDriveLetters(serviceId);
+        }
+
+        [WebMethod]
+        public SystemFile[] GetSystemSubFolders(int serviceId, string path)
+        {
+            return StorageSpacesController.GetSystemSubFolders(serviceId, path);
         }
     }
 }

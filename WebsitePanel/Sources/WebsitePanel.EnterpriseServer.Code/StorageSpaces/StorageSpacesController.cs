@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using WebsitePanel.Providers.Common;
+using WebsitePanel.Providers.OS;
 using WebsitePanel.Providers.ResultObjects;
 using WebsitePanel.Providers.StorageSpaces;
 
@@ -274,6 +275,8 @@ namespace WebsitePanel.EnterpriseServer
                     throw new ArgumentNullException("space");
                 }
 
+                var ss = GetStorageSpaceService(space.ServiceId);
+
                 if (space.Id > 0)
                 {
                     DataProvider.UpdateStorageSpace(space);
@@ -289,6 +292,9 @@ namespace WebsitePanel.EnterpriseServer
 
                     space.Id = result.Value;
                 }
+
+                ss.UpdateStorageSettings(space.Path, space.FsrmQuotaSizeBytes, space.FsrmQuotaType);
+
             }
             catch (Exception exception)
             {
@@ -327,6 +333,12 @@ namespace WebsitePanel.EnterpriseServer
                     throw new ArgumentException("Id must be greater than 0");
                 }
 
+                var storage = GetStorageSpaceByIdInternal(id);
+
+                var ss = GetStorageSpaceService(storage.ServiceId);
+
+                ss.ClearStorageSettings(storage.Path);
+
                 DataProvider.RemoveStorageSpace(id);
 
             }
@@ -351,5 +363,42 @@ namespace WebsitePanel.EnterpriseServer
         }
 
         #endregion
+
+        #region Storage Spaces TreeView
+
+        public static SystemFile[] GetDriveLetters(int serviceId)
+        {
+            return GetDriveLettersInternal(serviceId);
+        }
+
+        private static SystemFile[] GetDriveLettersInternal(int serviceId)
+        {
+            
+            var ss = GetStorageSpaceService(serviceId);
+
+            return ss.GetAllDriveLetters();
+        }
+
+        public static SystemFile[] GetSystemSubFolders(int serviceId, string path)
+        {
+            return GetSystemSubFoldersInternal(serviceId, path);
+        }
+
+        private static SystemFile[] GetSystemSubFoldersInternal(int serviceId, string path)
+        {
+            var ss = GetStorageSpaceService(serviceId);
+
+            return ss.GetSystemSubFolders(path);
+        }
+
+        #endregion
+
+        private static StorageSpaceServices GetStorageSpaceService(int serviceId)
+        {
+            var ss = new StorageSpaceServices();
+            ServiceProviderProxy.Init(ss, serviceId);
+
+            return ss;
+        }
     }
 }

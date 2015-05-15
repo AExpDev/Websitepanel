@@ -94,6 +94,15 @@ namespace WebsitePanel.Portal.StorageSpaces {
         protected global::System.Web.UI.WebControls.DropDownList ddlStorageService;
         
         /// <summary>
+        /// valReqStorageService control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator valReqStorageService;
+        
+        /// <summary>
         /// locPath control.
         /// </summary>
         /// <remarks>
@@ -103,22 +112,22 @@ namespace WebsitePanel.Portal.StorageSpaces {
         protected global::System.Web.UI.WebControls.Localize locPath;
         
         /// <summary>
-        /// txtPath control.
+        /// FoldersTree control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtPath;
+        protected global::System.Web.UI.WebControls.TreeView FoldersTree;
         
         /// <summary>
-        /// valReqTxtPath control.
+        /// valRequireFolder control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator valReqTxtPath;
+        protected global::System.Web.UI.WebControls.CustomValidator valRequireFolder;
         
         /// <summary>
         /// lblSsLevel control.
@@ -137,6 +146,15 @@ namespace WebsitePanel.Portal.StorageSpaces {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlSsLevel;
+        
+        /// <summary>
+        /// valReqSsLevel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator valReqSsLevel;
         
         /// <summary>
         /// locStorageSize control.

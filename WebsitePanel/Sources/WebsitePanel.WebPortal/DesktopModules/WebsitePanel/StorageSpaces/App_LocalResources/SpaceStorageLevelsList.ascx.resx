@@ -121,12 +121,12 @@
     <value>Remove</value>
   </data>
   <data name="btnAddSsLevel.Text" xml:space="preserve">
-    <value>Add Storage Service Level</value>
+    <value>Add Storage Space Level</value>
   </data>
   <data name="gvRDSServers.Empty" xml:space="preserve">
-    <value>The list of Space Storage Levels is empty.&lt;br&gt;&lt;br&gt;To add a new Space Storage Level "Add Storage Service Level" button.</value>
+    <value>The list of Storage Space Levels is empty.&lt;br&gt;&lt;br&gt;To add a new Storage Space Level "Add Storage Space Level" button.</value>
   </data>
   <data name="cmdDelete.OnClientClick" xml:space="preserve">
-    <value>if(confirm('Are you sure you want to delete selected space storage level server??')) ShowProgressDialog('Removing space storage level...'); else return false;</value>
+    <value>if(confirm('Are you sure you want to delete selected storage space level??')) ShowProgressDialog('Removing storage space level...'); else return false;</value>
   </data>
 </root>

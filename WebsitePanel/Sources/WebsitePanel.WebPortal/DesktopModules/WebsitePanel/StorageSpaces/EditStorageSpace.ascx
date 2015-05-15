@@ -36,16 +36,20 @@
                             <td class="SubHead" style="width: 200px;">
                                 <asp:Localize ID="lblStorageService" runat="server" meta:resourcekey="lblStorageService" />
                             <td style="width: 200px;">
-                                <asp:DropDownList ID="ddlStorageService" runat="server" CssClass="HugeTextBox200" />
+                                <asp:DropDownList ID="ddlStorageService" runat="server" CssClass="HugeTextBox200" OnSelectedIndexChanged="ddlStorageService_OnSelectedIndexChanged"/>
+                                <asp:RequiredFieldValidator ID="valReqStorageService" runat="server" meta:resourcekey="valReqStorageService" ControlToValidate="ddlStorageService"
+                                                            ErrorMessage="Please select storage space service" ValidationGroup="SaveSpaceStorage" Display="Dynamic" Text="*" />
                             </td>
                         </tr>
-                         <tr>
+                        <tr>
                             <td class="Label" style="width: 260px;">
                                 <asp:Localize ID="locPath" runat="server" meta:resourcekey="locPath"></asp:Localize>
                             </td>
                             <td style="width: 250px;">
-                                <asp:TextBox ID="txtPath" runat="server" CssClass="NormalTextBox" />
-                                <asp:RequiredFieldValidator runat="server" ID="valReqTxtPath" ControlToValidate="txtName" meta:resourcekey="valReqTxtPath" ErrorMessage="*" ValidationGroup="SaveSpaceStorage" />
+                                <asp:TreeView ID="FoldersTree" runat="server" OnTreeNodePopulate="FoldersTree_OnTreeNodePopulate" />
+                                <asp:CustomValidator ID="valRequireFolder" runat="server" meta:resourcekey="valRequireFolder"
+                                    ErrorMessage="sym" Text="Please select a folder" Display="Dynamic"  ValidationGroup="SaveSpaceStorage"
+                                    ClientValidationFunction="ClientValidateTreeView" OnServerValidate="valRequireFolder_ServerValidate"></asp:CustomValidator>
                             </td>
                         </tr>
                         <tr>
@@ -53,20 +57,24 @@
                                 <asp:Localize ID="lblSsLevel" runat="server" meta:resourcekey="lblSsLevel" />
                             <td style="width: 200px;">
                                 <asp:DropDownList ID="ddlSsLevel" runat="server" CssClass="HugeTextBox200" />
+                                <asp:RequiredFieldValidator ID="valReqSsLevel" runat="server" meta:resourcekey="valReqSsLevel" ControlToValidate="ddlSsLevel"
+                                                            ErrorMessage="Please select storage space level" ValidationGroup="SaveSpaceStorage" Display="Dynamic" Text="*" />
                             </td>
                         </tr>
-                         <tr>
-							<td class="Label"><asp:Localize ID="locStorageSize" runat="server" meta:resourcekey="locStorageSize" Text="Storage Limit Size (Gb):"></asp:Localize></td>
-							<td>
-								<asp:TextBox ID="txtStorageSize" runat="server" CssClass="HugeTextBox200"></asp:TextBox>
-                                <asp:RequiredFieldValidator ID="valRequireFolderSize" runat="server" meta:resourcekey="valRequireStorageSize" ControlToValidate="txtStorageSize"
-									ErrorMessage="Enter Storage Size" ValidationGroup="SaveSpaceStorage" Display="Dynamic" Text="*" SetFocusOnError="True"></asp:RequiredFieldValidator>
-                                <asp:RangeValidator ID="rangeStorageSize" runat="server" ControlToValidate="txtStorageSize" meta:resourcekey="rangeStorageSize"  MaximumValue="99999999" MinimumValue="0.01" Type="Double"
-                                    ValidationGroup="SaveSpaceStorage" Display="Dynamic" Text="*" SetFocusOnError="True"/>
-							</td>
-						</tr>
                         <tr>
-                            <td class="Label"><asp:Localize ID="locQuotaType" runat="server" meta:resourcekey="locQuotaType" Text="Quota Type:"></asp:Localize></td>
+                            <td class="Label">
+                                <asp:Localize ID="locStorageSize" runat="server" meta:resourcekey="locStorageSize" Text="Storage Limit Size (Gb):"></asp:Localize></td>
+                            <td>
+                                <asp:TextBox ID="txtStorageSize" runat="server" CssClass="HugeTextBox200"></asp:TextBox>
+                                <asp:RequiredFieldValidator ID="valRequireFolderSize" runat="server" meta:resourcekey="valRequireStorageSize" ControlToValidate="txtStorageSize"
+                                    ErrorMessage="Enter Storage Size" ValidationGroup="SaveSpaceStorage" Display="Dynamic" Text="*" SetFocusOnError="True"></asp:RequiredFieldValidator>
+                                <asp:RangeValidator ID="rangeStorageSize" runat="server" ControlToValidate="txtStorageSize" meta:resourcekey="rangeStorageSize" MaximumValue="99999999" MinimumValue="0.01" Type="Double"
+                                    ValidationGroup="SaveSpaceStorage" Display="Dynamic" Text="*" SetFocusOnError="True" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="Label">
+                                <asp:Localize ID="locQuotaType" runat="server" meta:resourcekey="locQuotaType" Text="Quota Type:"></asp:Localize></td>
                             <td class="FormRBtnL">
                                 <asp:RadioButton ID="rbtnQuotaSoft" runat="server" meta:resourcekey="rbtnQuotaSoft" Text="Soft" GroupName="QuotaType" Checked="true" />
                                 <asp:RadioButton ID="rbtnQuotaHard" runat="server" meta:resourcekey="rbtnQuotaHard" Text="Hard" GroupName="QuotaType" />

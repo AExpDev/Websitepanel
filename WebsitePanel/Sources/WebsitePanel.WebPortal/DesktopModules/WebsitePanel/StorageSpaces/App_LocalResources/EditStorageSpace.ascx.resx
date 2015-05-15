@@ -159,4 +159,19 @@
   <data name="rangeStorageSize.Text" xml:space="preserve">
     <value>*</value>
   </data>
+  <data name="valRequireFolder.Text" xml:space="preserve">
+    <value>Please select a folder</value>
+  </data>
+  <data name="valReqSsLevel.Text" xml:space="preserve">
+    <value>*</value>
+  </data>
+  <data name="valReqSsLevel.ErrorMessage" xml:space="preserve">
+    <value>Please select storage space level</value>
+  </data>
+  <data name="valReqStorageService.Text" xml:space="preserve">
+    <value>*</value>
+  </data>
+  <data name="valReqStorageService.ErrorMessage" xml:space="preserve">
+    <value>Please select storage space service</value>
+  </data>
 </root>
