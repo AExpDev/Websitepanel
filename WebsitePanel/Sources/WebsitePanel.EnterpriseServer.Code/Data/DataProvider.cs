@@ -36,6 +36,7 @@ using WebsitePanel.Providers.HostedSolution;
 using Microsoft.ApplicationBlocks.Data;
 using System.Collections.Generic;
 using Microsoft.Win32;
+using WebsitePanel.Providers.OS;
 using WebsitePanel.Providers.RemoteDesktopServices;
 using WebsitePanel.Providers.DNS;
 using WebsitePanel.Providers.DomainLookup;
@@ -4563,7 +4564,7 @@ namespace WebsitePanel.EnterpriseServer
             );
         }
 
-        public static int AddEntepriseFolder(int itemId, string folderName, int folderQuota, string locationDrive, string homeFolder, string domain)
+        public static int AddEntepriseFolder(int itemId, string folderName, int folderQuota, string locationDrive, string homeFolder, string domain, int storageSpaceFolderId)
         {
             SqlParameter prmId = new SqlParameter("@FolderID", SqlDbType.Int);
             prmId.Direction = ParameterDirection.Output;
@@ -4578,7 +4579,8 @@ namespace WebsitePanel.EnterpriseServer
                 new SqlParameter("@FolderQuota", folderQuota),
                 new SqlParameter("@LocationDrive", locationDrive),
                 new SqlParameter("@HomeFolder", homeFolder),
-                new SqlParameter("@Domain", domain)
+                new SqlParameter("@Domain", domain),
+                new SqlParameter("@StorageSpaceFolderId", storageSpaceFolderId)
             );
 
             // read identity
@@ -4614,6 +4616,21 @@ namespace WebsitePanel.EnterpriseServer
                 CommandType.StoredProcedure,
                 "GetEnterpriseFolders",
                 new SqlParameter("@ItemID", itemId)
+            );
+        }
+
+        public static DataSet GetEnterpriseFoldersPaged(int itemId, string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
+        {
+            return SqlHelper.ExecuteDataset(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetEnterpriseFoldersPaged",
+                new SqlParameter("@ItemId", itemId),
+                new SqlParameter("@FilterColumn", VerifyColumnName(filterColumn)),
+                new SqlParameter("@FilterValue", VerifyColumnValue(filterValue)),
+                new SqlParameter("@SortColumn", VerifyColumnName(sortColumn)),
+                new SqlParameter("@startRow", startRow),
+                new SqlParameter("@maximumRows", maximumRows)
             );
         }
 
@@ -4934,7 +4951,9 @@ namespace WebsitePanel.EnterpriseServer
                 new SqlParameter("@LevelId", space.LevelId),
                 new SqlParameter("@Path", space.Path),
                 new SqlParameter("@FsrmQuotaType", space.FsrmQuotaType),
-                new SqlParameter("@FsrmQuotaSizeBytes", space.FsrmQuotaSizeBytes)
+                new SqlParameter("@FsrmQuotaSizeBytes", space.FsrmQuotaSizeBytes),
+                new SqlParameter("@IsShared", space.IsShared),
+                new SqlParameter("@UncPath", space.UncPath)
             );
 
             return space.Id;
@@ -4956,7 +4975,9 @@ namespace WebsitePanel.EnterpriseServer
                 new SqlParameter("@LevelId", space.LevelId),
                 new SqlParameter("@Path", space.Path),
                 new SqlParameter("@FsrmQuotaType", space.FsrmQuotaType),
-                new SqlParameter("@FsrmQuotaSizeBytes", space.FsrmQuotaSizeBytes)
+                new SqlParameter("@FsrmQuotaSizeBytes", space.FsrmQuotaSizeBytes),
+                new SqlParameter("@IsShared", space.IsShared),
+                new SqlParameter("@UncPath", space.UncPath)
             );
 
             // read identity
@@ -4980,6 +5001,114 @@ namespace WebsitePanel.EnterpriseServer
                 CommandType.StoredProcedure,
                 "GetStorageSpacesByLevelId",
                 new SqlParameter("@LevelId", levelId)
+            );
+        }
+
+        public static IDataReader GetStorageSpacesByResourceGroupName(string groupName)
+        {
+            return SqlHelper.ExecuteReader(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpacesByResourceGroupName",
+                new SqlParameter("@ResourceGroupName", groupName)
+            );
+        }
+
+        public static int CreateStorageSpaceFolder(StorageSpaceFolder folder)
+        {
+            folder.Id = CreateStorageSpaceFolder(folder.Name, folder.StorageSpaceId, folder.Path, folder.UncPath, folder.IsShared, folder.FsrmQuotaType, folder.FsrmQuotaSizeBytes);
+
+            return folder.Id;
+        }
+
+        public static int CreateStorageSpaceFolder(string name, int storageSpaceId, string path, string uncPath, bool isShared, QuotaType quotaType, long fsrmQuotaSizeBytes)
+        {
+            SqlParameter id = new SqlParameter("@ID", SqlDbType.Int);
+            id.Direction = ParameterDirection.Output;
+
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "CreateStorageSpaceFolder",
+                id,
+                new SqlParameter("@Name", name),
+                new SqlParameter("@StorageSpaceId", storageSpaceId),
+                new SqlParameter("@Path", path),
+                new SqlParameter("@UncPath", uncPath),
+                new SqlParameter("@IsShared", isShared),
+                new SqlParameter("@FsrmQuotaType", quotaType),
+                new SqlParameter("@FsrmQuotaSizeBytes", fsrmQuotaSizeBytes)
+            );
+
+            // read identity
+            return Convert.ToInt32(id.Value);
+        }
+
+        public static int UpdateStorageSpaceFolder(StorageSpaceFolder folder)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "UpdateStorageSpaceFolder",
+                new SqlParameter("@ID", folder.Id),
+                new SqlParameter("@Name", folder.Name),
+                new SqlParameter("@StorageSpaceId", folder.StorageSpaceId),
+                new SqlParameter("@Path", folder.Path),
+                new SqlParameter("@UncPath", folder.UncPath),
+                new SqlParameter("@IsShared", folder.IsShared),
+                new SqlParameter("@FsrmQuotaType", folder.FsrmQuotaType),
+                new SqlParameter("@FsrmQuotaSizeBytes", folder.FsrmQuotaSizeBytes)
+            );
+
+            return folder.Id;
+        }
+
+        public static int UpdateStorageSpaceFolder(int id, string folderName, int storageSpaceId, string path, string uncPath, bool isShared, QuotaType type, long fsrmQuotaSizeBytes)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "UpdateStorageSpaceFolder",
+                new SqlParameter("@ID", id),
+                new SqlParameter("@Name", folderName),
+                new SqlParameter("@StorageSpaceId", storageSpaceId),
+                new SqlParameter("@Path", path),
+                new SqlParameter("@UncPath", uncPath),
+                new SqlParameter("@IsShared", isShared),
+                new SqlParameter("@FsrmQuotaType", type),
+                new SqlParameter("@FsrmQuotaSizeBytes", fsrmQuotaSizeBytes)
+            );
+
+            return id;
+        }
+
+        public static IDataReader GetStorageSpaceFoldersByStorageSpaceId(int id)
+        {
+            return SqlHelper.ExecuteReader(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpaceFoldersByStorageSpaceId",
+                new SqlParameter("@StorageSpaceId", id)
+            );
+        }
+
+        public static IDataReader GetStorageSpaceFolderById(int id)
+        {
+            return SqlHelper.ExecuteReader(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpaceFolderById",
+                new SqlParameter("@ID", id)
+            );
+        }
+
+        public static void RemoveStorageSpaceFolder(int id)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "RemoveStorageSpaceFolder",
+                new SqlParameter("@ID", id)
             );
         }
 

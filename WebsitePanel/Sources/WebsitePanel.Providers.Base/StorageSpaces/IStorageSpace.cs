@@ -9,7 +9,15 @@ namespace WebsitePanel.Providers.StorageSpaces
         List<SystemFile> GetAllDriveLetters();
         List<SystemFile> GetSystemSubFolders(string path);
         void UpdateStorageSettings(string fullPath, long qouteSizeBytes, QuotaType type);
-        void ClearStorageSettings(string fullPath);
+        void ClearStorageSettings(string fullPath, string uncPath);
         void UpdateFolderQuota(string fullPath, long qouteSizeBytes, QuotaType type);
+        Quota GetFolderQuota(string fullPath);
+        void CreateFolder(string fullPath);
+        void DeleteFolder(string fullPath);
+        bool RenameFolder(string originalPath, string newName);
+        bool FileOrDirectoryExist(string fullPath);
+        void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions);
+        StorageSpaceFolderShare ShareFolder(string fullPath, string shareName);
+        SystemFile[] Search(string[] searchPaths, string searchText, bool recursive);
     }
 }

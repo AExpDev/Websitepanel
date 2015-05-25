@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using WebsitePanel.Providers.Common;
 using WebsitePanel.Providers.OS;
 using WebsitePanel.Providers.ResultObjects;
@@ -277,6 +279,18 @@ namespace WebsitePanel.EnterpriseServer
 
                 var ss = GetStorageSpaceService(space.ServiceId);
 
+                var share = ss.ShareFolder(space.Path, space.Name);
+
+                if (share == null)
+                {
+                    throw new Exception("Error sharin folder");
+                }
+                else
+                {
+                    space.IsShared = true;
+                    space.UncPath = share.UncPath;
+                }
+
                 if (space.Id > 0)
                 {
                     DataProvider.UpdateStorageSpace(space);
@@ -294,7 +308,6 @@ namespace WebsitePanel.EnterpriseServer
                 }
 
                 ss.UpdateStorageSettings(space.Path, space.FsrmQuotaSizeBytes, space.FsrmQuotaType);
-
             }
             catch (Exception exception)
             {
@@ -337,7 +350,7 @@ namespace WebsitePanel.EnterpriseServer
 
                 var ss = GetStorageSpaceService(storage.ServiceId);
 
-                ss.ClearStorageSettings(storage.Path);
+                ss.ClearStorageSettings(storage.Path, storage.UncPath);
 
                 DataProvider.RemoveStorageSpace(id);
 
@@ -360,6 +373,549 @@ namespace WebsitePanel.EnterpriseServer
             }
 
             return result;
+        }
+
+        public static IntResult FindBestStorageSpaceService(string groupName, long quotaSizeBytes)
+        {
+            return FindBestStorageSpaceServiceInternal(groupName, quotaSizeBytes);
+        }
+
+        private static IntResult FindBestStorageSpaceServiceInternal(string groupName, long quotaSizeBytes)
+        {
+            var result = TaskManager.StartResultTask<IntResult>("STORAGE_SPACES", "FIND_BEST_STORAGE_SPACE_SERVICE");
+
+            try
+            {
+                if (string.IsNullOrEmpty(groupName))
+                {
+                    throw new ArgumentNullException("groupName");
+                }
+
+                var storages = ObjectUtils.CreateListFromDataReader<StorageSpace>(DataProvider.GetStorageSpacesByResourceGroupName(groupName));
+
+                if (!storages.Any())
+                {
+                    throw new Exception(string.Format("Storage spaces not found for '{0}' resource group", groupName));
+                }
+
+                var orderedStorages = storages.OrderBy(x => x.FsrmQuotaSizeBytes - x.UsedSizeBytes);
+
+                var bestStorage = orderedStorages.First();
+
+                if (bestStorage.FsrmQuotaSizeBytes - bestStorage.UsedSizeBytes < quotaSizeBytes)
+                {
+                    throw new Exception("Space storages was found, but available space not enough");
+                }
+
+                result.Value = bestStorage.Id;
+
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error finding best Storage Space", exception);
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Storage Space Folders
+
+        public static IntResult CreateStorageSpaceFolder(string groupName, string organizationId, string folderName, long quotaInBytes, QuotaType quotaType)
+        {
+            return CreateStorageSpaceFolderInternal(groupName, organizationId,folderName, quotaInBytes, quotaType);
+        }
+
+        private static IntResult CreateStorageSpaceFolderInternal(string groupName, string organizationId, string folderName, long quotaInBytes, QuotaType quotaType)
+        {
+            var result = TaskManager.StartResultTask<IntResult>("STORAGE_SPACES", "CREATE_STORAGE_SPACE_FOLDER");
+
+            try
+            {
+                var storageId = StorageSpacesController.FindBestStorageSpaceService(ResourceGroups.EnterpriseStorage, quotaInBytes);
+
+                if (!storageId.IsSuccess)
+                {
+                    throw new Exception(storageId.ErrorCodes.First());
+                }
+
+                var storageSpace = StorageSpacesController.GetStorageSpaceById(storageId.Value);
+
+                if (storageSpace == null)
+                {
+                    throw new Exception(string.Format("Storage space with id={0} not found", storageId.Value));
+                }
+
+                var ss = StorageSpacesController.GetStorageSpaceService(storageSpace.ServiceId);
+
+                var fullPath = Path.Combine(storageSpace.Path, groupName, organizationId, folderName);
+                var uncPath = Path.Combine(storageSpace.UncPath, groupName, organizationId, folderName);
+
+                ss.CreateFolder(fullPath);
+
+                ss.UpdateFolderQuota(fullPath, quotaInBytes, quotaType);
+
+                result.Value = DataProvider.CreateStorageSpaceFolder(folderName, storageSpace.Id, fullPath, uncPath, false, quotaType, quotaInBytes);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error removing Storage Space", exception);
+
+                if (result.Value > 0)
+                {
+                    DataProvider.RemoveStorageSpaceFolder(result.Value);
+                }
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static ResultObject UpdateStorageSpaceFolder(int storageSpaceId, int storageSpaceFolderId, string folderName, string relativePath, long quotaInBytes, QuotaType quotaType)
+        {
+            return UpdateStorageSpaceFolderInternal(storageSpaceId, storageSpaceFolderId, folderName, relativePath, quotaInBytes, quotaType);
+        }
+
+        private static ResultObject UpdateStorageSpaceFolderInternal(int storageSpaceId, int storageSpaceFolderId,string folderName, string relativePath, long quotaInBytes, QuotaType quotaType)
+        {
+            var result = TaskManager.StartResultTask<ResultObject>("STORAGE_SPACES", "UPDATE_STORAGE_SPACE_FOLDER");
+
+            try
+            {
+                var storageSpace = StorageSpacesController.GetStorageSpaceById(storageSpaceId);
+
+                if (storageSpace == null)
+                {
+                    throw new Exception(string.Format("Storage space with id={0} not found", storageSpaceId));
+                }
+
+                var ss = StorageSpacesController.GetStorageSpaceService(storageSpace.ServiceId);
+
+                var fullPath = Path.Combine(storageSpace.Path, relativePath);
+                var uncPath = Path.Combine(storageSpace.UncPath, relativePath);
+
+                ss.UpdateFolderQuota(fullPath, quotaInBytes, quotaType);
+
+                DataProvider.UpdateStorageSpaceFolder(storageSpaceFolderId, folderName, storageSpace.Id, fullPath, uncPath, false, quotaType, quotaInBytes);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error removing Storage Space", exception);
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static ResultObject DeleteStorageSpaceFolder(int storageSpaceId, int storageSpaceFolderId)
+        {
+            return DeleteStorageSpaceFolderInternal(storageSpaceId, storageSpaceFolderId);
+        }
+
+        private static ResultObject DeleteStorageSpaceFolderInternal(int storageSpaceId, int storageSpaceFolderId)
+        {
+            var result = TaskManager.StartResultTask<IntResult>("STORAGE_SPACES", "DELETE_STORAGE_SPACE_FOLDER");
+
+            try
+            {
+                if (storageSpaceId < 0)
+                {
+                    throw new ArgumentException("Storage Space iD must be greater than 0");
+                }
+
+                var storage = GetStorageSpaceById(storageSpaceId);
+
+                if (storage == null)
+                {
+                    throw new Exception(string.Format("Storage space with id={0} not found", storageSpaceId));
+                }
+
+                var storageFolder = GetStorageSpaceFolderById(storageSpaceFolderId);
+
+                if (storageFolder == null)
+                {
+                    throw new Exception(string.Format("Storage Space folder with id={0} not found", storageSpaceFolderId));
+                }
+
+                var ss = GetStorageSpaceService(storage.ServiceId);
+
+                ss.DeleteFolder(storageFolder.Path);
+
+                DataProvider.RemoveStorageSpaceFolder(storageSpaceFolderId);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error removing Storage Space folder", exception);
+
+                if (result.Value > 0)
+                {
+                    DataProvider.RemoveStorageSpaceFolder(result.Value);
+                }
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static ResultObject SetStorageSpaceFolderQuota(int storageSpaceId, int storageSpaceFolderId, long quotaInBytes, QuotaType quotaType)
+        {
+            return SetStorageSpaceFolderQuotaInternal(storageSpaceId, storageSpaceFolderId, quotaInBytes, quotaType);
+        }
+
+        private static ResultObject SetStorageSpaceFolderQuotaInternal(int storageSpaceId, int storageSpaceFolderId, long quotaInBytes, QuotaType quotaType)
+        {
+            var result = TaskManager.StartResultTask<IntResult>("STORAGE_SPACES", "SET_STORAGE_SPACE_FOLDER_QUOTA");
+
+            try
+            {
+                if (storageSpaceId < 0)
+                {
+                    throw new ArgumentException("Storage Space iD must be greater than 0");
+                }
+
+                var storage = GetStorageSpaceById(storageSpaceId);
+
+                if (storage == null)
+                {
+                    throw new Exception(string.Format("Storage space with id={0} not found", storageSpaceId));
+                }
+
+                var storageFolder = GetStorageSpaceFolderById(storageSpaceFolderId);
+
+                if (storageFolder == null)
+                {
+                    throw new Exception(string.Format("Storage Space folder with id={0} not found", storageSpaceFolderId));
+                }
+
+                SetFolderQuota(storageSpaceId, storageFolder.Path, quotaInBytes, quotaType);
+
+                DataProvider.UpdateStorageSpaceFolder(storageSpaceFolderId, storageFolder.Name, storageSpaceId, storageFolder.Path, storageFolder.UncPath, storageFolder.IsShared, quotaType, quotaInBytes);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error removing Storage Space folder", exception);
+
+                if (result.Value > 0)
+                {
+                    DataProvider.RemoveStorageSpaceFolder(result.Value);
+                }
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static List<StorageSpaceFolder> GetStorageSpaceFoldersByStorageSpaceId(int storageSpaceId)
+        {
+            return GetStorageSpaceFoldersByStorageSpaceIdInternal(storageSpaceId);
+        }
+
+        private static List<StorageSpaceFolder> GetStorageSpaceFoldersByStorageSpaceIdInternal(int storageSpaceId)
+        {
+            var folders = ObjectUtils.CreateListFromDataReader<StorageSpaceFolder>(DataProvider.GetStorageSpaceFoldersByStorageSpaceId(storageSpaceId));
+
+            return folders;
+        }
+
+        public static ResultObject SetFolderNtfsPermissions(int storageSpaceId, string fullPath, UserPermission[] permissions)
+        {
+            return SetFolderNtfsPermissionsInternal(storageSpaceId, fullPath, permissions);
+        }
+
+        private static ResultObject SetFolderNtfsPermissionsInternal(int storageSpaceId, string fullPath, UserPermission[] permissions)
+        {
+            var result = TaskManager.StartResultTask<IntResult>("STORAGE_SPACES", "SET_NTFS_PERMISSIONS_ON_FOLDER");
+
+            try
+            {
+                if (storageSpaceId < 0)
+                {
+                    throw new ArgumentException("Storage Space iD must be greater than 0");
+                }
+
+                var storage = GetStorageSpaceById(storageSpaceId);
+
+                if (storage == null)
+                {
+                    throw new Exception(string.Format("Storage space with id={0} not found", storageSpaceId));
+                }
+
+
+                var ss = GetStorageSpaceService(storage.ServiceId);
+
+                ss.SetFolderNtfsPermissions(fullPath, permissions);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error setting NTFS permissions on Storage Space folder", exception);
+
+                if (result.Value > 0)
+                {
+                    DataProvider.RemoveStorageSpaceFolder(result.Value);
+                }
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static BoolResult StorageSpaceFileOrFolderExist(int storageSpaceId, string fullPath)
+        {
+            return StorageSpaceFileOrFolderExistInternal(storageSpaceId, fullPath);
+        }
+
+        private static BoolResult StorageSpaceFileOrFolderExistInternal(int storageSpaceId, string fullPath)
+        {
+            var result = TaskManager.StartResultTask<BoolResult>("STORAGE_SPACES", "FOLDER_OR_FOLDER_EXIST");
+
+            try
+            {
+                if (storageSpaceId < 0)
+                {
+                    throw new ArgumentException("Storage Space iD must be greater than 0");
+                }
+
+                var storage = GetStorageSpaceById(storageSpaceId);
+
+                if (storage == null)
+                {
+                    throw new Exception(string.Format("Storage space with id={0} not found", storageSpaceId));
+                }
+
+                var ss = GetStorageSpaceService(storage.ServiceId);
+
+                result.Value = ss.FileOrDirectoryExist(fullPath);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error during folder exist check", exception);
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static ResultObject RenameStorageSpaceFolder(int storageSpaceId, string fullPath, string newName)
+        {
+            return RenameFolderInternal(storageSpaceId, fullPath, newName);
+        }
+
+        private static ResultObject RenameFolderInternal(int storageSpaceId, string fullPath, string newName)
+        {
+            var result = TaskManager.StartResultTask<ResultObject>("STORAGE_SPACES", "RENAME_FOLDER");
+
+            try
+            {
+                if (storageSpaceId < 0)
+                {
+                    throw new ArgumentException("Storage Space iD must be greater than 0");
+                }
+
+                var storage = GetStorageSpaceById(storageSpaceId);
+
+                if (storage == null)
+                {
+                    throw new Exception(string.Format("Storage space with id={0} not found", storageSpaceId));
+                }
+
+                var ss = GetStorageSpaceService(storage.ServiceId);
+
+                ss.RenameFolder(fullPath, newName);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error during folder exist check", exception);
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
+
+            return result;
+        }
+
+        public static StorageSpaceFolder GetStorageSpaceFolderById(int id)
+        {
+            return GetStorageSpaceFolderByIdInternal(id);
+        }
+
+        private static StorageSpaceFolder GetStorageSpaceFolderByIdInternal(int id)
+        {
+            return ObjectUtils.FillObjectFromDataReader<StorageSpaceFolder>(DataProvider.GetStorageSpaceFolderById(id));
+        }
+
+        public static Quota GetFolderQuota(string fullPath, int storageSpaceid)
+        {
+            var space = GetStorageSpaceById(storageSpaceid);
+
+            var ss = GetStorageSpaceService(space.ServiceId);
+
+            return ss.GetFolderQuota(fullPath);
+        }
+
+        public static void SetFolderQuota(int storageSpaceid, string fullPath, long quotaSizeBytes, QuotaType type)
+        {
+            var space = GetStorageSpaceById(storageSpaceid);
+
+            var ss = GetStorageSpaceService(space.ServiceId);
+
+            ss.UpdateFolderQuota(fullPath, quotaSizeBytes,type);
+        }
+
+        public static List<Task<IEnumerable<SystemFile>>> SearchInStorageSpaceFolders(IEnumerable<StorageSpaceFolderSearchRequest> requests)
+        {
+            var tasks = new List<Task<IEnumerable<SystemFile>>>();
+
+            foreach (var request in requests)
+            {
+                StorageSpaceFolderSearchRequest closure = request;
+
+                var task = new Task<IEnumerable<SystemFile>>(() =>
+                {
+                    return SearchInStorageSpaceFolderInternal(closure.StorageSpaceId, closure.StorageSpaceFolderId, closure.SearchPath, closure.SearchValue);
+                });
+
+                task.Start();
+
+                tasks.Add(task);
+            }
+
+            return tasks;
+        }
+
+        public static List<SystemFile> SearchInStorageSpaceFolder(int storageSpaceId, int storageSpaceFolderId, string searchPath, string searchValue)
+        {
+            return SearchInStorageSpaceFolderInternal(storageSpaceId, storageSpaceFolderId, searchPath, searchValue);
+        }
+
+        private static List<SystemFile> SearchInStorageSpaceFolderInternal(int storageSpaceId, int storageSpaceFolderId, string searchPath, string searchValue)
+        {
+            var storageSpace = StorageSpacesController.GetStorageSpaceById(storageSpaceId);
+
+            if (storageSpace == null)
+            {
+                throw new Exception(string.Format("Storage space with id={0} not found", storageSpaceId));
+            }
+
+            var storageSpaceFolder = StorageSpacesController.GetStorageSpaceFolderById(storageSpaceFolderId);
+
+            if (storageSpaceFolder == null)
+            {
+                throw new Exception(string.Format("Storage space folder with id={0} not found", storageSpaceFolderId));
+            }
+
+            var origSearchPath = searchPath;
+            var ss = GetStorageSpaceService(storageSpace.ServiceId);
+
+            int index = searchPath.IndexOf(Path.DirectorySeparatorChar);
+
+
+            if (index >= 0)
+            {
+                searchPath = searchPath.Substring(index + 1);
+
+                searchPath = Path.Combine(storageSpaceFolder.Path, searchPath);
+            }
+            else
+            {
+                searchPath = storageSpaceFolder.Path;
+            }
+
+            var searchResults = ss.Search(new[] {searchPath}, searchValue, true).ToList();
+
+            foreach (var result in searchResults)
+            {
+                result.RelativeUrl = result.FullName.Replace(storageSpaceFolder.Path, origSearchPath);
+            }
+
+            return searchResults;
         }
 
         #endregion
@@ -393,7 +949,7 @@ namespace WebsitePanel.EnterpriseServer
 
         #endregion
 
-        private static StorageSpaceServices GetStorageSpaceService(int serviceId)
+        public static StorageSpaceServices GetStorageSpaceService(int serviceId)
         {
             var ss = new StorageSpaceServices();
             ServiceProviderProxy.Init(ss, serviceId);

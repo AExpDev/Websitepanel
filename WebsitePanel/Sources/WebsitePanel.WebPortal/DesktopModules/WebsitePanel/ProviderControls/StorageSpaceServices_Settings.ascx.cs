@@ -20,12 +20,12 @@ namespace WebsitePanel.Portal.ProviderControls
 
         public void BindSettings(StringDictionary settings)
         {
-           
+            txtWebDavSiteAppPoolIdentity.Text = settings["WebdavSiteAppPoolIdentity"];
         }
 
         public void SaveSettings(StringDictionary settings)
         {
-            
+            settings["WebdavSiteAppPoolIdentity"] = txtWebDavSiteAppPoolIdentity.Text;
         }
     }
 }

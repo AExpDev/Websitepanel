@@ -233,7 +233,7 @@ namespace WebsitePanel.Portal.StorageSpaces
             storage.ServerId = serviceInfo.ServerId;
 
             storage.FsrmQuotaType = rbtnQuotaSoft.Checked ? QuotaType.Soft : QuotaType.Hard;
-            storage.FsrmQuotaSizeBytes = Convert.ToInt64(txtStorageSize.Text)*1024*1024*1024;
+            storage.FsrmQuotaSizeBytes = (long)(decimal.Parse(txtStorageSize.Text)*1024*1024*1024);
 
             var result = ES.Services.StorageSpaces.SaveStorageSpace(storage);
 

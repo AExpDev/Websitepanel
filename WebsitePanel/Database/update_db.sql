@@ -11520,6 +11520,8 @@ BEGIN
 		ServerId INT NOT NULL,
 		LevelId INT NOT NULL,
 		Path varchar(max) NOT NULL,
+		IsShared BIT NOT NULL,
+		UncPath varchar(max),
 		FsrmQuotaType INT NOT NULL,
 		FsrmQuotaSizeBytes BIGINT NOT NULL
 	)
@@ -11563,7 +11565,7 @@ CREATE PROCEDURE [dbo].[GetStorageSpacesPaged]
 )
 AS
 -- build query and run it to the temporary table
-DECLARE @sql nvarchar(2000)
+DECLARE @sql nvarchar(2500)
 
 SET @sql = '
 
@@ -11594,7 +11596,9 @@ SELECT
 		CR.LevelId,
 		CR.Path,
 		CR.FsrmQuotaType,
-		CR.FsrmQuotaSizeBytes
+		CR.FsrmQuotaSizeBytes,
+		CR.IsShared,
+		CR.UncPath
 FROM @Spaces AS C
 INNER JOIN StorageSpaces AS CR ON C.SpaceId = CR.Id
 WHERE C.ItemPosition BETWEEN @StartRow AND @EndRow'
@@ -11624,7 +11628,9 @@ SELECT
 		SS.LevelId,
 		SS.Path,
 		SS.FsrmQuotaType,
-		SS.FsrmQuotaSizeBytes
+		SS.FsrmQuotaSizeBytes,
+		SS.IsShared,
+		SS.UncPath
 FROM StorageSpaces AS SS
 INNER JOIN StorageSpaceLevels AS SSL
 ON SSL.Id = SS.LevelId
@@ -11650,7 +11656,9 @@ AS
 		SS.LevelId,
 		SS.Path,
 		SS.FsrmQuotaType,
-		SS.FsrmQuotaSizeBytes
+		SS.FsrmQuotaSizeBytes,
+		SS.IsShared,
+		SS.UncPath
 	FROM [dbo].[StorageSpaces] AS SS
 	WHERE SS.Id = @Id
 GO
@@ -11669,11 +11677,13 @@ CREATE PROCEDURE UpdateStorageSpace
 	@LevelId INT,
 	@Path varchar(max),
 	@FsrmQuotaType INT,
-	@FsrmQuotaSizeBytes BIGINT
+	@FsrmQuotaSizeBytes BIGINT,
+	@IsShared BIT,
+	@UncPath varchar(max)
 )
 AS
 	UPDATE StorageSpaces
-	SET Name = @Name, ServiceId = @ServiceId,ServerId=@ServerId,LevelId=@LevelId, Path=@Path,FsrmQuotaType=@FsrmQuotaType,FsrmQuotaSizeBytes=@FsrmQuotaSizeBytes
+	SET Name = @Name, ServiceId = @ServiceId,ServerId=@ServerId,LevelId=@LevelId, Path=@Path,FsrmQuotaType=@FsrmQuotaType,FsrmQuotaSizeBytes=@FsrmQuotaSizeBytes,IsShared=@IsShared,UncPath=@UncPath
 	WHERE ID = @ID
 GO
 
@@ -11690,7 +11700,9 @@ CREATE PROCEDURE InsertStorageSpace
 	@LevelId INT,
 	@Path varchar(max),
 	@FsrmQuotaType INT,
-	@FsrmQuotaSizeBytes BIGINT
+	@FsrmQuotaSizeBytes BIGINT,
+	@IsShared BIT,
+	@UncPath varchar(max)
 )
 AS
 
@@ -11702,7 +11714,9 @@ INSERT INTO StorageSpaces
 	LevelId,
 	Path,
 	FsrmQuotaType,
-	FsrmQuotaSizeBytes
+	FsrmQuotaSizeBytes,
+	IsShared,
+	UncPath
 )
 VALUES 
 (
@@ -11712,7 +11726,9 @@ VALUES
 	@LevelId,
 	@Path,
 	@FsrmQuotaType,
-	@FsrmQuotaSizeBytes
+	@FsrmQuotaSizeBytes,
+	@IsShared,
+	@UncPath
 )
 
 SET @ID = SCOPE_IDENTITY()
@@ -11729,4 +11745,362 @@ CREATE PROCEDURE RemoveStorageSpace
 )
 AS
 	DELETE FROM StorageSpaces WHERE ID = @ID
+GO
+
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS  WHERE type = 'P' AND name = 'GetStorageSpacesByResourceGroupName')
+DROP PROCEDURE GetStorageSpacesByResourceGroupName
+GO
+CREATE PROCEDURE GetStorageSpacesByResourceGroupName 
+(
+	@ResourceGroupName varchar(max)
+)
+AS
+SELECT
+		SS.Id,
+		SS.Name ,
+		SS.ServiceId ,
+		SS.ServerId ,
+		SS.LevelId,
+		SS.Path,
+		SS.FsrmQuotaType,
+		SS.FsrmQuotaSizeBytes,
+		ISNULL((SELECT SUM(SSF.FsrmQuotaSizeBytes) FROM StorageSpaceFolders AS SSF WHERE SSF.StorageSpaceId = SS.Id), 0) UsedSizeBytes
+FROM StorageSpaces AS SS
+INNER JOIN StorageSpaceLevelResourceGroups AS SSLRG ON SSLRG.LevelId = SS.LevelId
+INNER JOIN ResourceGroups AS RG ON SSLRG.GroupID = RG.GroupID
+WHERE RG.GroupName = @ResourceGroupName
+GO
+
+-- STORAGE SPACE FOLDER
+
+
+--TODO Remove drop
+IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceFolders')
+BEGIN
+DROP TABLE StorageSpaceFolders
+END
+
+IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceFolders')
+BEGIN
+	CREATE TABLE StorageSpaceFolders
+	(
+		Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+		Name varchar(300) NOT NULL,
+		StorageSpaceId INT NOT NULL,
+		Path varchar(max) NOT NULL,
+		UncPath varchar(max),
+		IsShared BIT NOT NULL,
+		FsrmQuotaType INT NOT NULL,
+		FsrmQuotaSizeBytes BIGINT NOT NULL,
+	)
+END
+
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE type = 'F' AND name = 'FK_StorageSpaceFolders_StorageSpaceId')
+BEGIN
+	ALTER TABLE [dbo].[StorageSpaceFolders]
+	DROP CONSTRAINT [FK_StorageSpaceFolders_StorageSpaceId]
+END	
+
+ALTER TABLE [dbo].[StorageSpaceFolders]  WITH CHECK ADD  CONSTRAINT [FK_StorageSpaceFolders_StorageSpaceId] FOREIGN KEY([StorageSpaceId])
+REFERENCES [dbo].[StorageSpaces] ([ID])
+ON DELETE CASCADE
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name ='CreateStorageSpaceFolder')
+	DROP PROCEDURE CreateStorageSpaceFolder
+GO
+
+CREATE PROCEDURE CreateStorageSpaceFolder
+(
+	@ID INT OUTPUT,
+	@Name varchar(300),
+	@StorageSpaceId INT,
+	@Path varchar(max),
+	@UncPath varchar(max),
+	@IsShared BIT,
+	@FsrmQuotaType INT,
+	@FsrmQuotaSizeBytes BIGINT 
+)
+AS
+INSERT INTO StorageSpaceFolders (	
+	Name,
+	StorageSpaceId,
+	Path,
+	UncPath,
+	IsShared,
+	FsrmQuotaType,
+	FsrmQuotaSizeBytes)
+VALUES (
+	@Name,
+	@StorageSpaceId,
+	@Path,
+	@UncPath,
+	@IsShared,
+	@FsrmQuotaType,
+	@FsrmQuotaSizeBytes)
+
+SET @ID = SCOPE_IDENTITY()
+
+RETURN
+
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name ='UpdateStorageSpaceFolder')
+	DROP PROCEDURE UpdateStorageSpaceFolder
+GO
+
+CREATE PROCEDURE UpdateStorageSpaceFolder
+(
+	@ID INT,
+	@Name varchar(300),
+	@StorageSpaceId INT,
+	@Path varchar(max),
+	@UncPath varchar(max),
+	@IsShared BIT,
+	@FsrmQuotaType INT,
+	@FsrmQuotaSizeBytes BIGINT 
+)
+AS
+UPDATE StorageSpaceFolders
+SET
+	Name=@Name,
+	StorageSpaceId=@StorageSpaceId,
+	Path=@Path,
+	UncPath=@UncPath,
+	IsShared=@IsShared,
+	FsrmQuotaType=@FsrmQuotaType,
+	FsrmQuotaSizeBytes=@FsrmQuotaSizeBytes
+WHERE ID = @ID
+
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name ='RemoveStorageSpaceFolder')
+	DROP PROCEDURE RemoveStorageSpaceFolder
+GO
+
+CREATE PROCEDURE RemoveStorageSpaceFolder
+(
+	@ID INT
+)
+AS
+DELETE
+FROM StorageSpaceFolders
+WHERE ID=@ID
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name ='GetStorageSpaceFolderById')
+	DROP PROCEDURE GetStorageSpaceFolderById
+GO
+
+CREATE PROCEDURE GetStorageSpaceFolderById
+(
+	@ID INT
+)
+AS
+SELECT TOP 1
+	Id,
+	Name,
+	StorageSpaceId,
+	Path,
+	UncPath,
+	IsShared,
+	FsrmQuotaType,
+	FsrmQuotaSizeBytes
+FROM StorageSpaceFolders
+WHERE Id = @ID
+GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name ='GetStorageSpaceFoldersByStorageSpaceId')
+	DROP PROCEDURE GetStorageSpaceFoldersByStorageSpaceId
+GO
+
+CREATE PROCEDURE GetStorageSpaceFoldersByStorageSpaceId
+(
+	@StorageSpaceId INT
+)
+AS
+SELECT 
+	Id,
+	Name,
+	StorageSpaceId,
+	Path,
+	UncPath,
+	IsShared,
+	FsrmQuotaType,
+	FsrmQuotaSizeBytes
+FROM StorageSpaceFolders
+WHERE StorageSpaceId = @StorageSpaceId
+GO
+
+
+-- ENTERPRISE STORAGE UPDATE
+
+IF NOT EXISTS(select 1 from sys.columns COLS INNER JOIN sys.objects OBJS ON OBJS.object_id=COLS.object_id and OBJS.type='U' AND OBJS.name='EnterpriseFolders' AND COLS.name='StorageSpaceFolderId')
+BEGIN
+	ALTER TABLE [dbo].[EnterpriseFolders] ADD [StorageSpaceFolderId] INT NULL
+
+END
+GO
+
+IF  EXISTS (SELECT * FROM sys.objects WHERE type = 'F' AND name = 'FK_EnterpriseFolders_StorageSpaceFolderId')
+BEGIN
+	ALTER TABLE [dbo].[EnterpriseFolders]
+	DROP CONSTRAINT [FK_EnterpriseFolders_StorageSpaceFolderId]
+END	
+GO
+
+ALTER TABLE [dbo].[EnterpriseFolders]  WITH CHECK ADD  CONSTRAINT [FK_EnterpriseFolders_StorageSpaceFolderId] FOREIGN KEY([StorageSpaceFolderId])
+											REFERENCES [dbo].[StorageSpaceFolders] ([ID]) ON DELETE CASCADE
+GO
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name = 'AddEnterpriseFolder')
+DROP PROCEDURE [dbo].[AddEnterpriseFolder]
+GO
+
+CREATE PROCEDURE [dbo].[AddEnterpriseFolder]
+(
+	@FolderID INT OUTPUT,
+	@ItemID INT,
+	@FolderName NVARCHAR(255),
+	@FolderQuota INT,
+	@LocationDrive NVARCHAR(255),
+	@HomeFolder NVARCHAR(255),
+	@Domain NVARCHAR(255),
+	@StorageSpaceFolderId INT
+)
+AS
+
+INSERT INTO EnterpriseFolders
+(
+	ItemID,
+	FolderName,
+	FolderQuota,
+	LocationDrive,
+	HomeFolder,
+	Domain,
+	StorageSpaceFolderId
+)
+VALUES
+(
+	@ItemID,
+	@FolderName,
+	@FolderQuota,
+	@LocationDrive,
+	@HomeFolder,
+	@Domain,
+	@StorageSpaceFolderId
+)
+
+
+SET @FolderID = SCOPE_IDENTITY()
+
+RETURN
+GO
+
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name = 'GetEnterpriseFoldersPaged')
+DROP PROCEDURE GetEnterpriseFoldersPaged
+GO
+CREATE PROCEDURE [dbo].[GetEnterpriseFoldersPaged]
+(
+	@FilterColumn nvarchar(50) = '',
+	@FilterValue nvarchar(50) = '',
+	@ItemID int,
+	@SortColumn nvarchar(50),
+	@StartRow int,
+	@MaximumRows int
+)
+AS
+-- build query and run it to the temporary table
+DECLARE @sql nvarchar(2000)
+
+SET @sql = '
+DECLARE @EndRow int
+SET @EndRow = @StartRow + @MaximumRows
+
+DECLARE @Folders TABLE
+(
+	ItemPosition int IDENTITY(0,1),
+	Id int
+)
+INSERT INTO @Folders (Id)
+SELECT
+	S.EnterpriseFolderID
+FROM EnterpriseFolders AS S
+WHERE @ItemID = S.ItemID'
+
+IF @FilterColumn <> '' AND @FilterValue <> ''
+SET @sql = @sql + ' AND ' + @FilterColumn + ' LIKE @FilterValue '
+
+IF @SortColumn <> '' AND @SortColumn IS NOT NULL
+SET @sql = @sql + ' ORDER BY ' + @SortColumn + ' '
+
+SET @sql = @sql + ' SELECT COUNT(Id) FROM @Folders;
+SELECT
+	ST.EnterpriseFolderID,
+	ST.ItemID,
+	ST.FolderName,
+	ST.FolderQuota,
+	ST.LocationDrive,
+	ST.HomeFolder,
+	ST.Domain,
+	ST.StorageSpaceFolderId,
+	ssf.Name,
+	ssf.StorageSpaceId,
+	ssf.Path,
+	ssf.UncPath,
+	ssf.IsShared,
+	ssf.FsrmQuotaType,
+	ssf.FsrmQuotaSizeBytes
+FROM @Folders AS S
+INNER JOIN EnterpriseFolders AS ST ON S.Id = ST.EnterpriseFolderID
+LEFT OUTER JOIN StorageSpaceFolders as ssf on ssf.Id = ST.StorageSpaceFolderId
+WHERE S.ItemPosition BETWEEN @StartRow AND @EndRow'
+
+exec sp_executesql @sql, N'@StartRow int, @MaximumRows int,  @FilterValue nvarchar(50),  @ItemID int',
+@StartRow, @MaximumRows,  @FilterValue,  @ItemID
+
+
+RETURN
+
+GO
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name = 'GetEnterpriseFolder')
+DROP PROCEDURE GetEnterpriseFolder
+GO
+
+CREATE PROCEDURE [dbo].[GetEnterpriseFolder]
+(
+	@ItemID INT,
+	@FolderName NVARCHAR(255)
+)
+AS
+
+SELECT TOP 1
+	ST.EnterpriseFolderID,
+	ST.ItemID,
+	ST.FolderName,
+	ST.FolderQuota,
+	ST.LocationDrive,
+	ST.HomeFolder,
+	ST.Domain,
+	ST.StorageSpaceFolderId,
+	ssf.Name,
+	ssf.StorageSpaceId,
+	ssf.Path,
+	ssf.UncPath,
+	ssf.IsShared,
+	ssf.FsrmQuotaType,
+	ssf.FsrmQuotaSizeBytes
+FROM EnterpriseFolders AS ST
+LEFT OUTER JOIN StorageSpaceFolders as ssf on ssf.Id = ST.StorageSpaceFolderId
+WHERE ItemID = @ItemID AND FolderName = @FolderName
 GO

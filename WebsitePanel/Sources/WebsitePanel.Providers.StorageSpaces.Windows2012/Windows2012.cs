@@ -1,9 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data.OleDb;
 using System.IO;
+using System.Linq;
+using System.Management;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Net;
+using System.Net.NetworkInformation;
+using System.Text;
 using WebsitePanel.Providers.OS;
 using WebsitePanel.Providers.Utils;
 using WebsitePanel.Server.Utils;
@@ -15,6 +22,11 @@ namespace WebsitePanel.Providers.StorageSpaces
         internal string PrimaryDomainController
         {
             get { return ProviderSettings["PrimaryDomainController"]; }
+        }
+
+        internal string WebdavSiteAppPoolIdentity
+        {
+            get { return ProviderSettings["WebdavSiteAppPoolIdentity"]; }
         }
 
         #endregion Properties
@@ -104,7 +116,7 @@ namespace WebsitePanel.Providers.StorageSpaces
             UpdateFolderQuota(fullPath, qouteSizeBytes, type);
         }
 
-        public void ClearStorageSettings(string fullPath)
+        public void ClearStorageSettings(string fullPath, string uncPath)
         {
             Log.WriteStart("ClearStorageSettings");
             Log.WriteInfo("FolderPath : {0}", fullPath);
@@ -116,6 +128,13 @@ namespace WebsitePanel.Providers.StorageSpaces
                 runSpace = OpenRunspace();
 
                 RemoveOldQuotaOnFolder(runSpace, fullPath);
+
+                if (!string.IsNullOrEmpty(uncPath))
+                {
+                    var shareName = new Uri(uncPath).Segments.LastOrDefault();
+
+                    RemoveShare(shareName, runSpace);
+                }
             }
             catch (Exception ex)
             {
@@ -128,46 +147,71 @@ namespace WebsitePanel.Providers.StorageSpaces
                 Log.WriteEnd("ClearStorageSettings");
             }
 
-        } 
+        }
 
         #endregion
 
         #region Storage Space Folders
 
-        public void CreateStorageFolder(string fullPath)
+        public void CreateFolder(string fullPath)
         {
             FileUtils.CreateDirectory(fullPath);
         }
 
-        public string ShareFolder(string fullPath)
+        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions)
         {
+            Log.WriteStart("SetFolderNtfsPermissions");
+            Log.WriteInfo("Full path : {0}", fullPath);
+
             try
             {
-                Log.WriteStart("ShareFolder");
-                Log.WriteInfo("FolderPath : {0}", fullPath);
+                SecurityUtils.ResetNtfsPermissions(fullPath);
 
-                ManagementClass managementClass = new ManagementClass("Win32_Share");
+                SecurityUtils.GrantGroupNtfsPermissions(fullPath, permissions, false, new RemoteServerSettings(), null, null);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                throw;
+            }
+            finally
+            {
+                Log.WriteEnd("SetFolderNtfsPermissions");
+            }
+        }
 
-                ManagementBaseObject inParams = managementClass.GetMethodParameters("Create");
+        public void DeleteFolder(string fullPath)
+        {
+            Log.WriteStart("DeleteFolder");
+            Log.WriteInfo("Folder Path : {0}", fullPath);
 
-                ManagementBaseObject outParams;
+            try
+            {
+                DirectoryInfo treeRoot = new DirectoryInfo(fullPath);
 
-                // Set the input parameters
-
-                inParams["Path"] = fullPath;
-
-                inParams["Type"] = 0x0; // Disk Drive
-
-
-                // Invoke the method on the ManagementClass object
-
-                outParams = managementClass.InvokeMethod("Create", inParams, null);
-
-                // Check to see if the method invocation was successful
-
-                if ((uint)(outParams.Properties["ReturnValue"].Value) != 0)
+                if (treeRoot.Exists)
                 {
-                    throw new Exception("Unable to share directory.");
+                    DirectoryInfo[] dirs = treeRoot.GetDirectories();
+                    while (dirs.Length > 0)
+                    {
+                        foreach (DirectoryInfo dir in dirs)
+                        {
+                            DeleteFolder(dir.FullName);
+                        }
+
+                        dirs = treeRoot.GetDirectories();
+                    }
+
+                    // DELETE THE FILES UNDER THE CURRENT ROOT
+                    string[] files = Directory.GetFiles(treeRoot.FullName);
+                    foreach (string file in files)
+                    {
+                        File.SetAttributes(file, FileAttributes.Normal);
+                        File.Delete(file);
+                    }
+
+                    Directory.Delete(treeRoot.FullName, true);
+
                 }
             }
             catch (Exception ex)
@@ -175,11 +219,307 @@ namespace WebsitePanel.Providers.StorageSpaces
                 Log.WriteError(ex);
                 throw;
             }
-            finally 
+            finally
             {
+                Log.WriteEnd("DeleteFolder");
+            }
+        }
+
+        public bool FileOrDirectoryExist(string fullPath)
+        {
+            Log.WriteStart("FolderExist");
+            Log.WriteInfo("Folder Path : {0}", fullPath);
+
+            try
+            {
+                return (Directory.Exists(fullPath) || File.Exists(fullPath));
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                throw;
+            }
+            finally
+            {
+                Log.WriteEnd("FolderExist");
+            }
+        }
+
+        public bool RenameFolder(string originalPath, string newName)
+        {
+            Log.WriteStart("RenameFolder");
+            Log.WriteInfo("Folder Path : {0}", originalPath);
+            Log.WriteInfo("New Name : {0}", newName);
+
+            try
+            {
+                var newPath = Path.Combine(Directory.GetParent(originalPath).ToString(), newName);
+
+                FileUtils.MoveFile(originalPath, newPath);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                throw;
+            }
+            finally
+            {
+                Log.WriteEnd("RenameFolder");
+            }
+
+            return true;
+        }
+
+        public StorageSpaceFolderShare ShareFolder(string fullPath, string shareName)
+        {
+            Runspace runspace = null;
+
+            shareName = shareName.Replace(" ", "");
+
+            try
+            {
+                runspace = OpenRunspace();
+
+                if (ShareExist(shareName, runspace))
+                {
+                    var share = GetShare(shareName, runspace);
+
+                    if (String.Compare(share.Path, fullPath, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    {
+                        return share;
+                    }
+
+                    //finding first not used share name
+                    for (int i = 0; i < int.MaxValue; i++)
+                    {
+                        var tmpShareName = shareName + i;
+
+                        if (!ShareExist(tmpShareName, runspace))
+                        {
+                            shareName = tmpShareName;
+                            break;
+                        }
+                    }
+                }
+
+                Log.WriteStart("ShareFolder");
+                Log.WriteInfo("FolderPath : {0}", fullPath);
+
+                var scripts = new List<string>
+                {                
+                    string.Format("net share {0}=\"{1}\" \"/grant:NETWORK SERVICE,full\" \"/grant:{2},full\"",shareName, fullPath, WebdavSiteAppPoolIdentity)
+                };
+
+                object[] errors = null;
+                var result = ExecuteLocalScript(runspace, scripts, out errors);
+
+                return GetShare(shareName, runspace);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                throw;
+            }
+            finally
+            {
+                CloseRunspace(runspace);
                 Log.WriteEnd("ShareFolder");
             }
         }
+
+        public bool ShareExist(string shareName, Runspace runspace = null)
+        {
+
+            Log.WriteStart("ShareExist");
+            Log.WriteInfo("Share Name : {0}", shareName);
+
+            var closeRunspace = runspace == null;
+
+            try
+            {
+                if (runspace == null)
+                {
+                    runspace = OpenRunspace();
+                }
+
+                var cmd = new Command("Get-WmiObject");
+                cmd.Parameters.Add("Class", "Win32_Share");
+                cmd.Parameters.Add("Filter", string.Format("name='{0}'", shareName));
+
+                var result = ExecuteShellCommand(runspace, cmd, false);
+
+                return result.Any();
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                throw;
+            }
+            finally
+            {
+                if (closeRunspace)
+                {
+                    CloseRunspace(runspace);
+                }
+
+                Log.WriteEnd("ShareExist");
+            }
+
+            return false;
+        }
+
+        public StorageSpaceFolderShare GetShare(string shareName, Runspace runspace = null)
+        {
+            Log.WriteStart("GetShare");
+            Log.WriteInfo("Share Name : {0}", shareName);
+
+            var closeRunspace = runspace == null;
+
+            try
+            {
+                if (runspace == null)
+                {
+                    runspace = OpenRunspace();
+                }
+
+                var cmd = new Command("Get-WmiObject");
+                cmd.Parameters.Add("Class", "Win32_Share");
+                cmd.Parameters.Add("Filter", string.Format("name='{0}'", shareName));
+
+                var result = ExecuteShellCommand(runspace, cmd, false);
+
+                if (!result.Any())
+                {
+                    return null;
+                }
+
+                return CreateShareEntity(result[0]);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                throw;
+            }
+            finally
+            {
+                if (closeRunspace)
+                {
+                    CloseRunspace(runspace);
+                }
+
+                Log.WriteEnd("GetShare");
+            }
+        }
+
+        public bool RemoveShare(string shareName, Runspace runspace = null)
+        {
+
+            Log.WriteStart("RemoveShare");
+            Log.WriteInfo("Share Name : {0}", shareName);
+
+            var closeRunspace = runspace == null;
+
+            try
+            {
+                if (runspace == null)
+                {
+                    runspace = OpenRunspace();
+                }
+
+                var scripts = new List<string>
+                {                
+                    string.Format("net share {0} /Y /delete", shareName),
+                };
+
+                object[] errors = null;
+                var result = ExecuteLocalScript(runspace, scripts, out errors);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(ex);
+                throw;
+            }
+            finally
+            {
+                if (closeRunspace)
+                {
+                    CloseRunspace(runspace);
+                }
+
+                Log.WriteEnd("RemoveShare");
+            }
+
+            return false;
+        }
+
+        private StorageSpaceFolderShare CreateShareEntity(PSObject psObject)
+        {
+            var result = new StorageSpaceFolderShare();
+
+            result.Name = Convert.ToString(GetPSObjectProperty(psObject, "Name"));
+            result.Path = Convert.ToString(GetPSObjectProperty(psObject, "Path"));
+            result.UncPath = string.Format("\\\\{0}\\{1}", GetFqdn(), result.Name);
+
+            return result;
+        }
+
+        public SystemFile[] Search(string[] searchPaths, string searchText, bool recursive)
+        {
+            var result = new List<SystemFile>();
+
+            using (var conn = new OleDbConnection("Provider=Search.CollatorDSO;Extended Properties='Application=Windows';"))
+            {
+                var wsSql = string.Format(
+                        @"SELECT System.FileName, System.DateModified, System.Size, System.Kind, System.ItemPathDisplay, System.ItemType, System.Search.AutoSummary FROM SYSTEMINDEX WHERE System.FileName LIKE '%{0}%' AND ({1})",
+                        searchText,
+                        string.Join(" OR ", searchPaths.Select(x => string.Format("{0} = '{1}'", recursive ? "SCOPE" : "DIRECTORY", x)).ToArray()));
+
+                conn.Open();
+
+                var cmd = new OleDbCommand(wsSql, conn);
+
+                using (OleDbDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader != null && reader.Read())
+                    {
+                        var file = new SystemFile {Name = reader[0] as string};
+
+                        file.Changed = file.CreatedDate = reader[1] is DateTime ? (DateTime) reader[1] : new DateTime();
+                        file.Size = reader[2] is Decimal ? Convert.ToInt64((Decimal) reader[2]) : 0;
+
+                        var kind = reader[3] is IEnumerable ? ((IEnumerable) reader[3]).Cast<string>().ToList() : null;
+                        var itemType = reader[5] as string ?? string.Empty;
+
+                        if (kind != null && kind.Any() && itemType.ToLowerInvariant() != ".zip")
+                        {
+                            file.IsDirectory = kind.Any(x => x == "folder");
+                        }
+
+                        file.FullName = (reader[4] as string ?? string.Empty);
+
+                        //if (isRootSearch)
+                        //{
+                        //    file.RelativeUrl = file.FullName.Replace(rootFolder, "").Trim('\\');
+                        //}
+                        //else
+                        //{
+                        //    foreach (var searchPath in searchPaths)
+                        //    {
+                        //        file.RelativeUrl =
+                        //            file.FullName.Replace(Path.Combine(rootFolder, searchPath), "").Trim('\\');
+                        //    }
+                        //}
+
+                        file.Summary = SanitizeXmlString(reader[6] as string);
+
+                        result.Add(file);
+                    }
+                }
+            }
+
+            return result.ToArray();
+        }
+
 
         #endregion
 
@@ -190,6 +530,28 @@ namespace WebsitePanel.Providers.StorageSpaces
             driveLetter = driveLetter.Replace(":\\", string.Empty);
 
             SetQuotaLimitOnFolder(pathWithoutDriveLetter, driveLetter, quotaType, (qouteSizeBytes / 1024).ToString() + "KB", 0, String.Empty, String.Empty);
+        }
+
+        public Quota GetFolderQuota(string fullPath)
+        {
+            var quotas = GetQuotasForOrganization(Directory.GetParent(fullPath).ToString(), string.Empty, string.Empty);
+
+            if (quotas.ContainsKey(fullPath) == false)
+            {
+                return null;
+            }
+
+            var quota = quotas[fullPath];
+
+            if (quota != null)
+            {
+                if (quota.Usage == -1)
+                {
+                    quota.Usage = FileUtils.BytesToMb(FileUtils.CalculateFolderSize(fullPath));
+                }
+            }
+
+            return quota;
         }
 
         public List<SystemFile> GetAllDriveLetters()
@@ -228,5 +590,49 @@ namespace WebsitePanel.Providers.StorageSpaces
 
             return folders;
         }
+
+        private string GetFqdn()
+        {
+            string domainName = IPGlobalProperties.GetIPGlobalProperties().DomainName;
+            string hostName = Dns.GetHostName();
+
+            if (!hostName.EndsWith(domainName))  // if hostname does not already include domain name
+            {
+                hostName += "." + domainName;   // add the domain name part
+            }
+
+            return hostName;                    // return the fully qualified name
+        }
+
+        public string SanitizeXmlString(string xml)
+        {
+            if (xml == null)
+            {
+                return null;
+            }
+
+            var buffer = new StringBuilder(xml.Length);
+
+            foreach (char c in xml.Where(c => IsLegalXmlChar(c)))
+            {
+                buffer.Append(c);
+            }
+
+            return buffer.ToString();
+        }
+
+        public bool IsLegalXmlChar(int character)
+        {
+            return
+            (
+                 character == 0x9 /* == '\t' == 9   */          ||
+                 character == 0xA /* == '\n' == 10  */          ||
+                 character == 0xD /* == '\r' == 13  */          ||
+                (character >= 0x20 && character <= 0xD7FF) ||
+                (character >= 0xE000 && character <= 0xFFFD) ||
+                (character >= 0x10000 && character <= 0x10FFFF)
+            );
+        }
+
     }
 }

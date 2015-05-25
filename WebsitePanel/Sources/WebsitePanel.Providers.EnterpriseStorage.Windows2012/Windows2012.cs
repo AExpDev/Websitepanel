@@ -122,6 +122,42 @@ namespace WebsitePanel.Providers.EnterpriseStorage
             return (SystemFile[]) items.ToArray(typeof (SystemFile));
         }
 
+        public SystemFile[] GetQuotasForOrganization(SystemFile[] folders)
+        {
+            var windows = new WebsitePanel.Providers.OS.Windows2012();
+
+            var quotasArray = new Dictionary<string, Dictionary<string, Quota>>();
+
+            foreach (var folder in folders)
+            {
+                var parentFolderPath = Directory.GetParent(folder.FullName).ToString();
+
+                var quotas = quotasArray.ContainsKey(parentFolderPath) 
+                    ? quotasArray[parentFolderPath] 
+                    : windows.GetQuotasForOrganization(parentFolderPath, string.Empty, string.Empty);
+
+                if (quotas.ContainsKey(folder.FullName) == false)
+                {
+                    continue;
+                }
+
+                var quota = quotas[folder.FullName];
+
+                if (quota != null)
+                {
+                    folder.Size = quota.Usage;
+                    folder.FsrmQuotaType = quota.QuotaType;
+
+                    if (folder.Size == -1)
+                    {
+                        folder.Size = FileUtils.BytesToMb(FileUtils.CalculateFolderSize(folder.FullName));
+                    }
+                }
+            }
+
+            return folders;
+        }
+
         public SystemFile[] GetFoldersWithoutFrsm(string organizationId, WebDavSetting[] settings)
         {
             ArrayList items = new ArrayList();
@@ -340,7 +376,6 @@ namespace WebsitePanel.Providers.EnterpriseStorage
                 searchPaths = searchPaths.Where(x => !string.IsNullOrEmpty(x)).ToArray();
             }
 
-            //using (new WindowsIdentity(userPrincipalName).Impersonate())
             {
                 using (var conn = new OleDbConnection("Provider=Search.CollatorDSO;Extended Properties='Application=Windows';"))
                 {

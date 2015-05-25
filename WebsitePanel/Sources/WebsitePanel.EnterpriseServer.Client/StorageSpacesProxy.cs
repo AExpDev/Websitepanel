@@ -33,6 +33,7 @@ namespace WebsitePanel.EnterpriseServer {
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Web.Services.WebServiceBindingAttribute(Name="esStorageSpacesSoap", Namespace="http://tempuri.org/")]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ServiceProviderItem))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(StorageSpaceItem))]
     public partial class esStorageSpaces : Microsoft.Web.Services3.WebServicesClientProtocol {
         
         private System.Threading.SendOrPostCallback GetStorageSpaceLevelsPagedOperationCompleted;
@@ -40,6 +41,8 @@ namespace WebsitePanel.EnterpriseServer {
         private System.Threading.SendOrPostCallback GetStorageSpaceLevelByIdOperationCompleted;
         
         private System.Threading.SendOrPostCallback SaveStorageSpaceLevelOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback GetStorageSpaceFoldersByStorageSpaceIdOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetLevelResourceGroupsOperationCompleted;
         
@@ -74,6 +77,9 @@ namespace WebsitePanel.EnterpriseServer {
         
         /// <remarks/>
         public event SaveStorageSpaceLevelCompletedEventHandler SaveStorageSpaceLevelCompleted;
+        
+        /// <remarks/>
+        public event GetStorageSpaceFoldersByStorageSpaceIdCompletedEventHandler GetStorageSpaceFoldersByStorageSpaceIdCompleted;
         
         /// <remarks/>
         public event GetLevelResourceGroupsCompletedEventHandler GetLevelResourceGroupsCompleted;
@@ -240,6 +246,47 @@ namespace WebsitePanel.EnterpriseServer {
             if ((this.SaveStorageSpaceLevelCompleted != null)) {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
                 this.SaveStorageSpaceLevelCompleted(this, new SaveStorageSpaceLevelCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/GetStorageSpaceFoldersByStorageSpaceId", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public StorageSpaceFolder[] GetStorageSpaceFoldersByStorageSpaceId(int id) {
+            object[] results = this.Invoke("GetStorageSpaceFoldersByStorageSpaceId", new object[] {
+                        id});
+            return ((StorageSpaceFolder[])(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginGetStorageSpaceFoldersByStorageSpaceId(int id, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("GetStorageSpaceFoldersByStorageSpaceId", new object[] {
+                        id}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public StorageSpaceFolder[] EndGetStorageSpaceFoldersByStorageSpaceId(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((StorageSpaceFolder[])(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpaceFoldersByStorageSpaceIdAsync(int id) {
+            this.GetStorageSpaceFoldersByStorageSpaceIdAsync(id, null);
+        }
+        
+        /// <remarks/>
+        public void GetStorageSpaceFoldersByStorageSpaceIdAsync(int id, object userState) {
+            if ((this.GetStorageSpaceFoldersByStorageSpaceIdOperationCompleted == null)) {
+                this.GetStorageSpaceFoldersByStorageSpaceIdOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetStorageSpaceFoldersByStorageSpaceIdOperationCompleted);
+            }
+            this.InvokeAsync("GetStorageSpaceFoldersByStorageSpaceId", new object[] {
+                        id}, this.GetStorageSpaceFoldersByStorageSpaceIdOperationCompleted, userState);
+        }
+        
+        private void OnGetStorageSpaceFoldersByStorageSpaceIdOperationCompleted(object arg) {
+            if ((this.GetStorageSpaceFoldersByStorageSpaceIdCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetStorageSpaceFoldersByStorageSpaceIdCompleted(this, new GetStorageSpaceFoldersByStorageSpaceIdCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
         
@@ -751,6 +798,32 @@ namespace WebsitePanel.EnterpriseServer {
             get {
                 this.RaiseExceptionIfNecessary();
                 return ((IntResult)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void GetStorageSpaceFoldersByStorageSpaceIdCompletedEventHandler(object sender, GetStorageSpaceFoldersByStorageSpaceIdCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetStorageSpaceFoldersByStorageSpaceIdCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetStorageSpaceFoldersByStorageSpaceIdCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public StorageSpaceFolder[] Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((StorageSpaceFolder[])(this.results[0]));
             }
         }
     }

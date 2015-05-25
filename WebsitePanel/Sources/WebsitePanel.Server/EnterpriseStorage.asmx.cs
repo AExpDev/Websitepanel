@@ -27,6 +27,7 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Web;
 using System.Collections;
@@ -225,5 +226,23 @@ namespace WebsitePanel.Server
                 throw;
             }
         }
+
+        [WebMethod, SoapHeader("settings")]
+        public SystemFile[] GetQuotasForOrganization(SystemFile[] folders)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' GetQuotasForOrganization", ProviderSettings.ProviderName);
+                var newFolders = EnterpriseStorageProvider.GetQuotasForOrganization(folders);
+                Log.WriteEnd("'{0}' GetQuotasForOrganization", ProviderSettings.ProviderName);
+                return newFolders;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' GetQuotasForOrganization", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
     }
 }

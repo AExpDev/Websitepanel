@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -95,7 +96,7 @@ namespace WebsitePanel.WebDav.Core.Managers
                 items = WspContext.Services.EnterpriseStorage.SearchFiles(itemId, new []{pathPart}, searchValue, uesrPrincipalName, recursive);
             }
 
-            var resources = Convert(items, new Uri(WebDavAppConfigManager.Instance.WebdavRoot).Append(WspContext.User.OrganizationId, pathPart));
+            var resources = Convert(items, new Uri(WebDavAppConfigManager.Instance.WebdavRoot));
 
 
             return FilterResult(resources);
@@ -290,18 +291,13 @@ namespace WebsitePanel.WebDav.Core.Managers
             var rootFolders = new List<SystemFile>();
             var user = WspContext.User;
 
-            var userGroups = WSP.Services.Organizations.GetSecurityGroupsByMember(user.ItemId, user.AccountId);
+            var folders = WSP.Services.EnterpriseStorage.GetEnterpriseFoldersPaged(user.ItemId, true, false, false, "", "", 0, int.MaxValue).PageItems;
 
-            foreach (var folder in WSP.Services.EnterpriseStorage.GetEnterpriseFolders(WspContext.User.ItemId))
+            foreach (var folder in folders)
             {
-                foreach (var rule in folder.Rules)
+                if (_webDavAuthorizationService.HasAccess(user, Uri.UnescapeDataString(new Uri(folder.Url).PathAndQuery)))
                 {
-                    if ((rule.Users.Any(x=> string.Compare(x, user.AccountName, StringComparison.InvariantCultureIgnoreCase) == 0))
-                        || (userGroups.Any(x => rule.Roles.Any(r => string.Compare(r, x.AccountName, StringComparison.InvariantCultureIgnoreCase) == 0))))
-                    {
-                        rootFolders.Add(folder);
-                        break;
-                    }
+                    rootFolders.Add(folder);
                 }
             }
 

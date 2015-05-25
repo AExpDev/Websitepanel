@@ -40,6 +40,12 @@ namespace WebsitePanel.EnterpriseServer
         }
 
         [WebMethod]
+        public List<StorageSpaceFolder> GetStorageSpaceFoldersByStorageSpaceId(int id)
+        {
+            return StorageSpacesController.GetStorageSpaceFoldersByStorageSpaceId(id);
+        }
+
+        [WebMethod]
         public List<ResourceGroupInfo> GetLevelResourceGroups(int id)
         {
             return StorageSpacesController.GetLevelResourceGroups(id);

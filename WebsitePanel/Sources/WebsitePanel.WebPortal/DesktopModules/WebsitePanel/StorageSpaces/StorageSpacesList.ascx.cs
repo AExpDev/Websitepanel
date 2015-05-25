@@ -98,5 +98,10 @@ namespace WebsitePanel.Portal.StorageSpaces
         {
             Response.Redirect(EditUrl("StorageSpaceId", ssid, "edit_storage_space"));
         }
+
+        protected bool CheckStorageIsInUse(int storageId)
+        {
+            return ES.Services.StorageSpaces.GetStorageSpaceFoldersByStorageSpaceId(storageId).Any();
+        }
     }
 }

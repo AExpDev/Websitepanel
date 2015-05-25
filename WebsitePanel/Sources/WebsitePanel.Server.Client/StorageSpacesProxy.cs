@@ -43,6 +43,22 @@ namespace WebsitePanel.Providers.StorageSpaces {
         
         private System.Threading.SendOrPostCallback UpdateFolderQuotaOperationCompleted;
         
+        private System.Threading.SendOrPostCallback CreateFolderOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback ShareFolderOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback GetFolderQuotaOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback DeleteFolderOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback RenameFolderOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback FileOrDirectoryExistOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback SetFolderNtfsPermissionsOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback SearchOperationCompleted;
+        
         /// <remarks/>
         public StorageSpaceServices() {
             this.Url = "http://localhost:9003/StorageSpaceServices.asmx";
@@ -62,6 +78,30 @@ namespace WebsitePanel.Providers.StorageSpaces {
         
         /// <remarks/>
         public event UpdateFolderQuotaCompletedEventHandler UpdateFolderQuotaCompleted;
+        
+        /// <remarks/>
+        public event CreateFolderCompletedEventHandler CreateFolderCompleted;
+        
+        /// <remarks/>
+        public event ShareFolderCompletedEventHandler ShareFolderCompleted;
+        
+        /// <remarks/>
+        public event GetFolderQuotaCompletedEventHandler GetFolderQuotaCompleted;
+        
+        /// <remarks/>
+        public event DeleteFolderCompletedEventHandler DeleteFolderCompleted;
+        
+        /// <remarks/>
+        public event RenameFolderCompletedEventHandler RenameFolderCompleted;
+        
+        /// <remarks/>
+        public event FileOrDirectoryExistCompletedEventHandler FileOrDirectoryExistCompleted;
+        
+        /// <remarks/>
+        public event SetFolderNtfsPermissionsCompletedEventHandler SetFolderNtfsPermissionsCompleted;
+        
+        /// <remarks/>
+        public event SearchCompletedEventHandler SearchCompleted;
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
@@ -193,15 +233,17 @@ namespace WebsitePanel.Providers.StorageSpaces {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/ClearStorageSettings", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void ClearStorageSettings(string fullPath) {
+        public void ClearStorageSettings(string fullPath, string uncPath) {
             this.Invoke("ClearStorageSettings", new object[] {
-                        fullPath});
+                        fullPath,
+                        uncPath});
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginClearStorageSettings(string fullPath, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginClearStorageSettings(string fullPath, string uncPath, System.AsyncCallback callback, object asyncState) {
             return this.BeginInvoke("ClearStorageSettings", new object[] {
-                        fullPath}, callback, asyncState);
+                        fullPath,
+                        uncPath}, callback, asyncState);
         }
         
         /// <remarks/>
@@ -210,17 +252,18 @@ namespace WebsitePanel.Providers.StorageSpaces {
         }
         
         /// <remarks/>
-        public void ClearStorageSettingsAsync(string fullPath) {
-            this.ClearStorageSettingsAsync(fullPath, null);
+        public void ClearStorageSettingsAsync(string fullPath, string uncPath) {
+            this.ClearStorageSettingsAsync(fullPath, uncPath, null);
         }
         
         /// <remarks/>
-        public void ClearStorageSettingsAsync(string fullPath, object userState) {
+        public void ClearStorageSettingsAsync(string fullPath, string uncPath, object userState) {
             if ((this.ClearStorageSettingsOperationCompleted == null)) {
                 this.ClearStorageSettingsOperationCompleted = new System.Threading.SendOrPostCallback(this.OnClearStorageSettingsOperationCompleted);
             }
             this.InvokeAsync("ClearStorageSettings", new object[] {
-                        fullPath}, this.ClearStorageSettingsOperationCompleted, userState);
+                        fullPath,
+                        uncPath}, this.ClearStorageSettingsOperationCompleted, userState);
         }
         
         private void OnClearStorageSettingsOperationCompleted(object arg) {
@@ -273,6 +316,351 @@ namespace WebsitePanel.Providers.StorageSpaces {
             if ((this.UpdateFolderQuotaCompleted != null)) {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
                 this.UpdateFolderQuotaCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/CreateFolder", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public void CreateFolder(string fullPath) {
+            this.Invoke("CreateFolder", new object[] {
+                        fullPath});
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginCreateFolder(string fullPath, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("CreateFolder", new object[] {
+                        fullPath}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public void EndCreateFolder(System.IAsyncResult asyncResult) {
+            this.EndInvoke(asyncResult);
+        }
+        
+        /// <remarks/>
+        public void CreateFolderAsync(string fullPath) {
+            this.CreateFolderAsync(fullPath, null);
+        }
+        
+        /// <remarks/>
+        public void CreateFolderAsync(string fullPath, object userState) {
+            if ((this.CreateFolderOperationCompleted == null)) {
+                this.CreateFolderOperationCompleted = new System.Threading.SendOrPostCallback(this.OnCreateFolderOperationCompleted);
+            }
+            this.InvokeAsync("CreateFolder", new object[] {
+                        fullPath}, this.CreateFolderOperationCompleted, userState);
+        }
+        
+        private void OnCreateFolderOperationCompleted(object arg) {
+            if ((this.CreateFolderCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.CreateFolderCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/ShareFolder", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public StorageSpaceFolderShare ShareFolder(string fullPath, string shareName) {
+            object[] results = this.Invoke("ShareFolder", new object[] {
+                        fullPath,
+                        shareName});
+            return ((StorageSpaceFolderShare)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginShareFolder(string fullPath, string shareName, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("ShareFolder", new object[] {
+                        fullPath,
+                        shareName}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public StorageSpaceFolderShare EndShareFolder(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((StorageSpaceFolderShare)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void ShareFolderAsync(string fullPath, string shareName) {
+            this.ShareFolderAsync(fullPath, shareName, null);
+        }
+        
+        /// <remarks/>
+        public void ShareFolderAsync(string fullPath, string shareName, object userState) {
+            if ((this.ShareFolderOperationCompleted == null)) {
+                this.ShareFolderOperationCompleted = new System.Threading.SendOrPostCallback(this.OnShareFolderOperationCompleted);
+            }
+            this.InvokeAsync("ShareFolder", new object[] {
+                        fullPath,
+                        shareName}, this.ShareFolderOperationCompleted, userState);
+        }
+        
+        private void OnShareFolderOperationCompleted(object arg) {
+            if ((this.ShareFolderCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.ShareFolderCompleted(this, new ShareFolderCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/GetFolderQuota", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public Quota GetFolderQuota(string fullPath) {
+            object[] results = this.Invoke("GetFolderQuota", new object[] {
+                        fullPath});
+            return ((Quota)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginGetFolderQuota(string fullPath, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("GetFolderQuota", new object[] {
+                        fullPath}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public Quota EndGetFolderQuota(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((Quota)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetFolderQuotaAsync(string fullPath) {
+            this.GetFolderQuotaAsync(fullPath, null);
+        }
+        
+        /// <remarks/>
+        public void GetFolderQuotaAsync(string fullPath, object userState) {
+            if ((this.GetFolderQuotaOperationCompleted == null)) {
+                this.GetFolderQuotaOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetFolderQuotaOperationCompleted);
+            }
+            this.InvokeAsync("GetFolderQuota", new object[] {
+                        fullPath}, this.GetFolderQuotaOperationCompleted, userState);
+        }
+        
+        private void OnGetFolderQuotaOperationCompleted(object arg) {
+            if ((this.GetFolderQuotaCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetFolderQuotaCompleted(this, new GetFolderQuotaCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/DeleteFolder", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public void DeleteFolder(string fullPath) {
+            this.Invoke("DeleteFolder", new object[] {
+                        fullPath});
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginDeleteFolder(string fullPath, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("DeleteFolder", new object[] {
+                        fullPath}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public void EndDeleteFolder(System.IAsyncResult asyncResult) {
+            this.EndInvoke(asyncResult);
+        }
+        
+        /// <remarks/>
+        public void DeleteFolderAsync(string fullPath) {
+            this.DeleteFolderAsync(fullPath, null);
+        }
+        
+        /// <remarks/>
+        public void DeleteFolderAsync(string fullPath, object userState) {
+            if ((this.DeleteFolderOperationCompleted == null)) {
+                this.DeleteFolderOperationCompleted = new System.Threading.SendOrPostCallback(this.OnDeleteFolderOperationCompleted);
+            }
+            this.InvokeAsync("DeleteFolder", new object[] {
+                        fullPath}, this.DeleteFolderOperationCompleted, userState);
+        }
+        
+        private void OnDeleteFolderOperationCompleted(object arg) {
+            if ((this.DeleteFolderCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.DeleteFolderCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/RenameFolder", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public bool RenameFolder(string originalPath, string newName) {
+            object[] results = this.Invoke("RenameFolder", new object[] {
+                        originalPath,
+                        newName});
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginRenameFolder(string originalPath, string newName, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("RenameFolder", new object[] {
+                        originalPath,
+                        newName}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public bool EndRenameFolder(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void RenameFolderAsync(string originalPath, string newName) {
+            this.RenameFolderAsync(originalPath, newName, null);
+        }
+        
+        /// <remarks/>
+        public void RenameFolderAsync(string originalPath, string newName, object userState) {
+            if ((this.RenameFolderOperationCompleted == null)) {
+                this.RenameFolderOperationCompleted = new System.Threading.SendOrPostCallback(this.OnRenameFolderOperationCompleted);
+            }
+            this.InvokeAsync("RenameFolder", new object[] {
+                        originalPath,
+                        newName}, this.RenameFolderOperationCompleted, userState);
+        }
+        
+        private void OnRenameFolderOperationCompleted(object arg) {
+            if ((this.RenameFolderCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.RenameFolderCompleted(this, new RenameFolderCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/FileOrDirectoryExist", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public bool FileOrDirectoryExist(string fullPath) {
+            object[] results = this.Invoke("FileOrDirectoryExist", new object[] {
+                        fullPath});
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginFileOrDirectoryExist(string fullPath, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("FileOrDirectoryExist", new object[] {
+                        fullPath}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public bool EndFileOrDirectoryExist(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void FileOrDirectoryExistAsync(string fullPath) {
+            this.FileOrDirectoryExistAsync(fullPath, null);
+        }
+        
+        /// <remarks/>
+        public void FileOrDirectoryExistAsync(string fullPath, object userState) {
+            if ((this.FileOrDirectoryExistOperationCompleted == null)) {
+                this.FileOrDirectoryExistOperationCompleted = new System.Threading.SendOrPostCallback(this.OnFileOrDirectoryExistOperationCompleted);
+            }
+            this.InvokeAsync("FileOrDirectoryExist", new object[] {
+                        fullPath}, this.FileOrDirectoryExistOperationCompleted, userState);
+        }
+        
+        private void OnFileOrDirectoryExistOperationCompleted(object arg) {
+            if ((this.FileOrDirectoryExistCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.FileOrDirectoryExistCompleted(this, new FileOrDirectoryExistCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/SetFolderNtfsPermissions", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions) {
+            this.Invoke("SetFolderNtfsPermissions", new object[] {
+                        fullPath,
+                        permissions});
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginSetFolderNtfsPermissions(string fullPath, UserPermission[] permissions, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("SetFolderNtfsPermissions", new object[] {
+                        fullPath,
+                        permissions}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public void EndSetFolderNtfsPermissions(System.IAsyncResult asyncResult) {
+            this.EndInvoke(asyncResult);
+        }
+        
+        /// <remarks/>
+        public void SetFolderNtfsPermissionsAsync(string fullPath, UserPermission[] permissions) {
+            this.SetFolderNtfsPermissionsAsync(fullPath, permissions, null);
+        }
+        
+        /// <remarks/>
+        public void SetFolderNtfsPermissionsAsync(string fullPath, UserPermission[] permissions, object userState) {
+            if ((this.SetFolderNtfsPermissionsOperationCompleted == null)) {
+                this.SetFolderNtfsPermissionsOperationCompleted = new System.Threading.SendOrPostCallback(this.OnSetFolderNtfsPermissionsOperationCompleted);
+            }
+            this.InvokeAsync("SetFolderNtfsPermissions", new object[] {
+                        fullPath,
+                        permissions}, this.SetFolderNtfsPermissionsOperationCompleted, userState);
+        }
+        
+        private void OnSetFolderNtfsPermissionsOperationCompleted(object arg) {
+            if ((this.SetFolderNtfsPermissionsCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.SetFolderNtfsPermissionsCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/Search", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public SystemFile[] Search(string[] searchPaths, string searchText, bool recursive) {
+            object[] results = this.Invoke("Search", new object[] {
+                        searchPaths,
+                        searchText,
+                        recursive});
+            return ((SystemFile[])(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginSearch(string[] searchPaths, string searchText, bool recursive, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("Search", new object[] {
+                        searchPaths,
+                        searchText,
+                        recursive}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public SystemFile[] EndSearch(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((SystemFile[])(results[0]));
+        }
+        
+        /// <remarks/>
+        public void SearchAsync(string[] searchPaths, string searchText, bool recursive) {
+            this.SearchAsync(searchPaths, searchText, recursive, null);
+        }
+        
+        /// <remarks/>
+        public void SearchAsync(string[] searchPaths, string searchText, bool recursive, object userState) {
+            if ((this.SearchOperationCompleted == null)) {
+                this.SearchOperationCompleted = new System.Threading.SendOrPostCallback(this.OnSearchOperationCompleted);
+            }
+            this.InvokeAsync("Search", new object[] {
+                        searchPaths,
+                        searchText,
+                        recursive}, this.SearchOperationCompleted, userState);
+        }
+        
+        private void OnSearchOperationCompleted(object arg) {
+            if ((this.SearchCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.SearchCompleted(this, new SearchCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
         
@@ -345,4 +733,146 @@ namespace WebsitePanel.Providers.StorageSpaces {
     /// <remarks/>
     [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
     public delegate void UpdateFolderQuotaCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void CreateFolderCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void ShareFolderCompletedEventHandler(object sender, ShareFolderCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class ShareFolderCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal ShareFolderCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public StorageSpaceFolderShare Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((StorageSpaceFolderShare)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void GetFolderQuotaCompletedEventHandler(object sender, GetFolderQuotaCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetFolderQuotaCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetFolderQuotaCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public Quota Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((Quota)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void DeleteFolderCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void RenameFolderCompletedEventHandler(object sender, RenameFolderCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class RenameFolderCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal RenameFolderCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public bool Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((bool)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void FileOrDirectoryExistCompletedEventHandler(object sender, FileOrDirectoryExistCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class FileOrDirectoryExistCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal FileOrDirectoryExistCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public bool Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((bool)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void SetFolderNtfsPermissionsCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void SearchCompletedEventHandler(object sender, SearchCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class SearchCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal SearchCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public SystemFile[] Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((SystemFile[])(this.results[0]));
+            }
+        }
+    }
 }

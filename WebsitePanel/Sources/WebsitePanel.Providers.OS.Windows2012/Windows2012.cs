@@ -373,7 +373,33 @@ namespace WebsitePanel.Providers.OS
             return ExecuteShellCommand(runSpace, cmd, true);
         }
 
-        internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, bool useDomainController)
+        protected Collection<PSObject> ExecuteLocalScript(Runspace runSpace,  List<string> scripts, out object[] errors, params string[] moduleImports)
+        {
+            return ExecuteRemoteScript(runSpace, null ,scripts, out errors, moduleImports);
+        }
+
+        protected Collection<PSObject> ExecuteRemoteScript(Runspace runSpace, string hostName, List<string> scripts, out object[] errors, params string[] moduleImports)
+        {
+            Command invokeCommand = new Command("Invoke-Command");
+
+            if (!string.IsNullOrEmpty(hostName))
+            {
+                invokeCommand.Parameters.Add("ComputerName", hostName);
+            }
+
+            RunspaceInvoke invoke = new RunspaceInvoke();
+            string commandString = moduleImports.Any() ? string.Format("import-module {0};", string.Join(",", moduleImports)) : string.Empty;
+
+            commandString = string.Format("{0};{1}", commandString, string.Join(";", scripts.ToArray()));
+
+            ScriptBlock sb = invoke.Invoke(string.Format("{{{0}}}", commandString))[0].BaseObject as ScriptBlock;
+
+            invokeCommand.Parameters.Add("ScriptBlock", sb);
+
+            return ExecuteShellCommand(runSpace, invokeCommand, false, out errors);
+        }
+
+        protected Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, bool useDomainController)
         {
             object[] errors;
             return ExecuteShellCommand(runSpace, cmd, useDomainController, out errors);
@@ -428,7 +454,7 @@ namespace WebsitePanel.Providers.OS
             return results;
         }
 
-        internal object GetPSObjectProperty(PSObject obj, string name)
+        protected object GetPSObjectProperty(PSObject obj, string name)
         {
             return obj.Members[name].Value;
         }

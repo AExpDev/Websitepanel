@@ -80,12 +80,12 @@ namespace WebsitePanel.Server
         }
 
         [WebMethod, SoapHeader("settings")]
-        public void ClearStorageSettings(string fullPath)
+        public void ClearStorageSettings(string fullPath, string uncPath)
         {
             try
             {
                 Log.WriteStart("'{0}' ClearStorageSettings", ProviderSettings.ProviderName);
-                StorageSpaceProvider.ClearStorageSettings(fullPath);
+                StorageSpaceProvider.ClearStorageSettings(fullPath, uncPath);
                 Log.WriteEnd("'{0}' ClearStorageSettings", ProviderSettings.ProviderName);
             }
             catch (Exception ex)
@@ -111,5 +111,144 @@ namespace WebsitePanel.Server
             }
         }
 
+        [WebMethod, SoapHeader("settings")]
+        public void CreateFolder(string fullPath)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' CreateFolder", ProviderSettings.ProviderName);
+                StorageSpaceProvider.CreateFolder(fullPath);
+                Log.WriteEnd("'{0}' CreateFolder", ProviderSettings.ProviderName);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' CreateFolder", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        [WebMethod, SoapHeader("settings")]
+        public StorageSpaceFolderShare ShareFolder(string fullPath, string shareName)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' ShareFolder", ProviderSettings.ProviderName);
+                var result = StorageSpaceProvider.ShareFolder(fullPath, shareName);
+                Log.WriteEnd("'{0}' ShareFolder", ProviderSettings.ProviderName);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' ShareFolder", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        [WebMethod, SoapHeader("settings")]
+        public Quota GetFolderQuota(string fullPath)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' GetFolderQuota", ProviderSettings.ProviderName);
+                var result = StorageSpaceProvider.GetFolderQuota(fullPath);
+                Log.WriteEnd("'{0}' GetFolderQuota", ProviderSettings.ProviderName);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' GetFolderQuota", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        [WebMethod, SoapHeader("settings")]
+        public void DeleteFolder(string fullPath)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' DeleteFolder", ProviderSettings.ProviderName);
+                StorageSpaceProvider.DeleteFolder(fullPath);
+                Log.WriteEnd("'{0}' DeleteFolder", ProviderSettings.ProviderName);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' DeleteFolder", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        [WebMethod, SoapHeader("settings")]
+        public bool RenameFolder(string originalPath, string newName)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' RenameFolder", ProviderSettings.ProviderName);
+                var result = StorageSpaceProvider.RenameFolder(originalPath, newName);
+                Log.WriteEnd("'{0}' RenameFolder", ProviderSettings.ProviderName);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' RenameFolder", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        [WebMethod, SoapHeader("settings")]
+        public bool FileOrDirectoryExist(string fullPath)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' FileOrDirectoryExist", ProviderSettings.ProviderName);
+                var result = StorageSpaceProvider.FileOrDirectoryExist(fullPath);
+                Log.WriteEnd("'{0}' FileOrDirectoryExist", ProviderSettings.ProviderName);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' FileOrDirectoryExist", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        [WebMethod, SoapHeader("settings")]
+        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' SetFolderNtfsPermissions", ProviderSettings.ProviderName);
+                StorageSpaceProvider.SetFolderNtfsPermissions(fullPath, permissions);
+                Log.WriteEnd("'{0}' SetFolderNtfsPermissions", ProviderSettings.ProviderName);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' SetFolderNtfsPermissions", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        [WebMethod, SoapHeader("settings")]
+        public SystemFile[] Search(string[] searchPaths, string searchText, bool recursive)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' Search", ProviderSettings.ProviderName);
+                var result = StorageSpaceProvider.Search(searchPaths, searchText, recursive);
+                Log.WriteEnd("'{0}' Search", ProviderSettings.ProviderName);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' Search", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
+        
     }
 }
