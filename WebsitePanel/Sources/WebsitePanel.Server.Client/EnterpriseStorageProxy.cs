@@ -56,6 +56,8 @@ namespace WebsitePanel.Providers.EnterpriseStorage {
         
         private System.Threading.SendOrPostCallback GetQuotasForOrganizationOperationCompleted;
         
+        private System.Threading.SendOrPostCallback MoveFolderOperationCompleted;
+        
         /// <remarks/>
         public EnterpriseStorage() {
             this.Url = "http://localhost:9003/EnterpriseStorage.asmx";
@@ -93,6 +95,9 @@ namespace WebsitePanel.Providers.EnterpriseStorage {
         
         /// <remarks/>
         public event GetQuotasForOrganizationCompletedEventHandler GetQuotasForOrganizationCompleted;
+        
+        /// <remarks/>
+        public event MoveFolderCompletedEventHandler MoveFolderCompleted;
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
@@ -610,6 +615,49 @@ namespace WebsitePanel.Providers.EnterpriseStorage {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/MoveFolder", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public void MoveFolder(string oldPath, string newPath) {
+            this.Invoke("MoveFolder", new object[] {
+                        oldPath,
+                        newPath});
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginMoveFolder(string oldPath, string newPath, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("MoveFolder", new object[] {
+                        oldPath,
+                        newPath}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public void EndMoveFolder(System.IAsyncResult asyncResult) {
+            this.EndInvoke(asyncResult);
+        }
+        
+        /// <remarks/>
+        public void MoveFolderAsync(string oldPath, string newPath) {
+            this.MoveFolderAsync(oldPath, newPath, null);
+        }
+        
+        /// <remarks/>
+        public void MoveFolderAsync(string oldPath, string newPath, object userState) {
+            if ((this.MoveFolderOperationCompleted == null)) {
+                this.MoveFolderOperationCompleted = new System.Threading.SendOrPostCallback(this.OnMoveFolderOperationCompleted);
+            }
+            this.InvokeAsync("MoveFolder", new object[] {
+                        oldPath,
+                        newPath}, this.MoveFolderOperationCompleted, userState);
+        }
+        
+        private void OnMoveFolderOperationCompleted(object arg) {
+            if ((this.MoveFolderCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.MoveFolderCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
         public new void CancelAsync(object userState) {
             base.CancelAsync(userState);
         }
@@ -856,4 +904,8 @@ namespace WebsitePanel.Providers.EnterpriseStorage {
             }
         }
     }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void MoveFolderCompletedEventHandler(object sender, System.ComponentModel.AsyncCompletedEventArgs e);
 }

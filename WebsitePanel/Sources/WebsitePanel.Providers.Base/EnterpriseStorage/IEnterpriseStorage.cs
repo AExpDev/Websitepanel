@@ -50,5 +50,6 @@ namespace WebsitePanel.Providers.EnterpriseStorage
         bool CheckFileServicesInstallation();
         SystemFile[] Search(string organizationId, string[] searchPaths, string searchText, string userPrincipalName, bool recursive);
         SystemFile[] GetQuotasForOrganization(SystemFile[] folders);
+        void MoveFolder(string oldPath, string newPath);
     }
 }

@@ -12127,3 +12127,21 @@ FROM EnterpriseFolders AS ST
 LEFT OUTER JOIN StorageSpaceFolders as ssf on ssf.Id = ST.StorageSpaceFolderId
 WHERE ItemID = @ItemID AND FolderName = @FolderName
 GO
+
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS WHERE type = 'P' AND name = 'UpdateEntepriseFolderStorageSpaceFolder')
+DROP PROCEDURE UpdateEntepriseFolderStorageSpaceFolder
+GO
+
+CREATE PROCEDURE [dbo].[UpdateEntepriseFolderStorageSpaceFolder]
+(
+	@ItemID INT,
+	@FolderName NVARCHAR(255),
+	@StorageSpaceFolderId INT
+)
+AS
+
+UPDATE EnterpriseFolders
+SET StorageSpaceFolderId = @StorageSpaceFolderId
+WHERE ItemID = @ItemID AND FolderName = @FolderName
+GO

@@ -244,5 +244,21 @@ namespace WebsitePanel.Server
             }
         }
 
+        [WebMethod, SoapHeader("settings")]
+        public void MoveFolder(string oldPath, string newPath)
+        {
+            try
+            {
+                Log.WriteStart("'{0}' MoveFolder", ProviderSettings.ProviderName);
+                EnterpriseStorageProvider.MoveFolder(oldPath, newPath);
+                Log.WriteEnd("'{0}' MoveFolder", ProviderSettings.ProviderName);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(String.Format("'{0}' MoveFolder", ProviderSettings.ProviderName), ex);
+                throw;
+            }
+        }
+
     }
 }

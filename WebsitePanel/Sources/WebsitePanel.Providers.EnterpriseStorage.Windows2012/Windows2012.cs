@@ -248,8 +248,7 @@ namespace WebsitePanel.Providers.EnterpriseStorage
                 webDavSetting.HomeFolder, organizationId, folder));
         }
 
-        public SystemFile RenameFolder(string organizationId, string originalFolder, string newFolder,
-            WebDavSetting setting)
+        public SystemFile RenameFolder(string organizationId, string originalFolder, string newFolder, WebDavSetting setting)
         {
             var webDavSetting = GetWebDavSetting(setting);
 
@@ -266,6 +265,13 @@ namespace WebsitePanel.Providers.EnterpriseStorage
             webdav.DeleteAllWebDavRules(organizationId, originalFolder);
 
             return GetFolder(organizationId, newFolder, webDavSetting);
+        }
+
+        public void MoveFolder(string oldPath, string newPath)
+        {
+            FileUtils.CopyFile(oldPath, newPath);
+
+            FileUtils.DeleteFile(oldPath);
         }
 
         public void DeleteFolder(string organizationId, string folder, WebDavSetting setting)

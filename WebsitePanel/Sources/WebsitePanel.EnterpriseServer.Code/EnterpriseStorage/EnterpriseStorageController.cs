@@ -756,6 +756,8 @@ namespace WebsitePanel.EnterpriseServer
 
                     folder.Rules = GetFolderWebDavRulesInternal(itemId, folder.Name);
 
+                    folder.StorageSpaceFolderId = esFolder.StorageSpaceFolderId;
+
                     return folder;
                 }
 
@@ -1133,6 +1135,134 @@ namespace WebsitePanel.EnterpriseServer
             }
             catch(Exception e) 
             { /*skip exception*/}
+
+            return result;
+        }
+
+        public static ResultObject MoveToStorageSpace(int itemId, string folderName)
+        {
+            return MoveToStorageSpaceInternal(itemId, folderName);
+        }
+
+        private static ResultObject MoveToStorageSpaceInternal(int itemId, string folderName)
+        {
+            var result = TaskManager.StartResultTask<ResultObject>("ENTERPRISE_STORAGE", "MOVE_TO_STORAGE_SPACE");
+
+            var virDirectoryResult = new ResultObject { IsSuccess = false};
+            StorageSpaceFolder storageFolder = null;
+            Organization org = null;
+            EsFolder esFolder = null;
+
+            try
+            {
+                // load organization
+                org = OrganizationController.GetOrganization(itemId);
+                if (org == null)
+                {
+                    result.IsSuccess = false;
+                    result.AddError("", new NullReferenceException("Organization not found"));
+                    return result;
+                }
+
+                EnterpriseStorage es = GetEnterpriseStorage(GetEnterpriseStorageServiceID(org.PackageId));
+
+                esFolder = ObjectUtils.FillObjectFromDataReader<EsFolder>(DataProvider.GetEnterpriseFolder(itemId, folderName));
+
+                if (esFolder == null)
+                {
+                    throw new Exception("Folder not found");
+                }
+
+                if (esFolder.StorageSpaceFolderId != null)
+                {
+                    throw new Exception("Folder is already on Storage Spaces");
+                }
+
+                var systemFile = GetFolderInternal(itemId, folderName);
+
+                var directoryBrowsing = GetDirectoryBrowseEnabled(itemId, systemFile.Url);
+
+                long quotaInBytses = ((long)systemFile.FRSMQuotaMB) * 1024 * 1024;
+
+                var storageFolderResult =
+                    StorageSpacesController.CreateStorageSpaceFolder(ResourceGroups.EnterpriseStorage,
+                        org.OrganizationId, folderName, quotaInBytses, systemFile.FsrmQuotaType);
+
+                if (!storageFolderResult.IsSuccess)
+                {
+                    foreach (var errorCode in storageFolderResult.ErrorCodes)
+                    {
+                        result.ErrorCodes.Add(errorCode);
+                    }
+
+                    throw new Exception("Error creating storage space folder");
+                }
+
+                storageFolder = StorageSpacesController.GetStorageSpaceFolderById(storageFolderResult.Value);
+
+                virDirectoryResult = CreateEnterpriseStorageVirtualFolderInternal(org.PackageId, itemId, folderName, Directory.GetParent(Directory.GetParent(storageFolder.UncPath).ToString()).ToString());
+
+                if (!virDirectoryResult.IsSuccess)
+                {
+                    foreach (var errorCode in virDirectoryResult.ErrorCodes)
+                    {
+                        result.ErrorCodes.Add(errorCode);
+                    }
+
+                    throw new Exception("Error creating virtual folder");
+                }
+
+                var webDavResult = es.SetFolderWebDavRules(org.OrganizationId, folderName, null, systemFile.Rules.ToArray());
+
+                if (!webDavResult)
+                {
+                    throw new Exception("Error updating webdav rules");
+                }
+
+                var ntfsResult = StorageSpacesController.SetFolderNtfsPermissions(storageFolder.StorageSpaceId, storageFolder.Path, ConvertToUserPermissions(systemFile.Rules.ToArray()));
+
+                if (!ntfsResult.IsSuccess)
+                {
+                    foreach (var errorCode in ntfsResult.ErrorCodes)
+                    {
+                        result.ErrorCodes.Add(errorCode);
+                    }
+
+                    throw new Exception("Error updating NTFS permissions");
+                }
+
+                SetDirectoryBrowseEnabled(itemId, systemFile.Url, directoryBrowsing);
+
+                es.MoveFolder(systemFile.FullName, storageFolder.UncPath);
+
+                DataProvider.UpdateEntepriseFolderStorageSpaceFolder(itemId, folderName, storageFolderResult.Value);
+            }
+            catch (Exception exception)
+            {
+                TaskManager.WriteError(exception);
+                result.AddError("Error moving to Storage Space", exception);
+
+                if (storageFolder != null)
+                {
+                    StorageSpacesController.DeleteStorageSpaceFolder(storageFolder.StorageSpaceId, storageFolder.Id);
+                }
+
+                if (virDirectoryResult.IsSuccess && org != null && esFolder != null)
+                {
+                    EnterpriseStorageController.DeleteWebDavDirectory(org.PackageId, esFolder.Domain, string.Format("{0}/{1}", org.OrganizationId, esFolder.FolderName));
+                }
+            }
+            finally
+            {
+                if (!result.IsSuccess)
+                {
+                    TaskManager.CompleteResultTask(result);
+                }
+                else
+                {
+                    TaskManager.CompleteResultTask();
+                }
+            }
 
             return result;
         }

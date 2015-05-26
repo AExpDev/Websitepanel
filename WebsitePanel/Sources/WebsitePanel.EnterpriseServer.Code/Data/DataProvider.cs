@@ -4587,6 +4587,18 @@ namespace WebsitePanel.EnterpriseServer
             return Convert.ToInt32(prmId.Value);
         }
 
+        public static void UpdateEntepriseFolderStorageSpaceFolder(int itemId, string folderName, int? storageSpaceFolderId)
+        {
+            SqlHelper.ExecuteNonQuery(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "UpdateEntepriseFolderStorageSpaceFolder",
+                new SqlParameter("@ItemID", itemId),
+                new SqlParameter("@FolderName", folderName),
+                new SqlParameter("@StorageSpaceFolderId", storageSpaceFolderId)
+            );
+        }
+
         public static void DeleteEnterpriseFolder(int itemId, string folderName)
         {
             SqlHelper.ExecuteNonQuery(

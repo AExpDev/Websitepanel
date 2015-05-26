@@ -93,6 +93,8 @@ namespace WebsitePanel.EnterpriseServer {
         
         private System.Threading.SendOrPostCallback GetUserEnterpriseFolderWithOwaEditPermissionOperationCompleted;
         
+        private System.Threading.SendOrPostCallback MoveToStorageSpaceOperationCompleted;
+        
         private System.Threading.SendOrPostCallback GetStatisticsOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetStatisticsByOrganizationOperationCompleted;
@@ -198,6 +200,9 @@ namespace WebsitePanel.EnterpriseServer {
         
         /// <remarks/>
         public event GetUserEnterpriseFolderWithOwaEditPermissionCompletedEventHandler GetUserEnterpriseFolderWithOwaEditPermissionCompleted;
+        
+        /// <remarks/>
+        public event MoveToStorageSpaceCompletedEventHandler MoveToStorageSpaceCompleted;
         
         /// <remarks/>
         public event GetStatisticsCompletedEventHandler GetStatisticsCompleted;
@@ -1544,6 +1549,50 @@ namespace WebsitePanel.EnterpriseServer {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/enterpriseserver/MoveToStorageSpace", RequestNamespace="http://smbsaas/websitepanel/enterpriseserver", ResponseNamespace="http://smbsaas/websitepanel/enterpriseserver", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public ResultObject MoveToStorageSpace(int itemId, string folderName) {
+            object[] results = this.Invoke("MoveToStorageSpace", new object[] {
+                        itemId,
+                        folderName});
+            return ((ResultObject)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginMoveToStorageSpace(int itemId, string folderName, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("MoveToStorageSpace", new object[] {
+                        itemId,
+                        folderName}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public ResultObject EndMoveToStorageSpace(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((ResultObject)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void MoveToStorageSpaceAsync(int itemId, string folderName) {
+            this.MoveToStorageSpaceAsync(itemId, folderName, null);
+        }
+        
+        /// <remarks/>
+        public void MoveToStorageSpaceAsync(int itemId, string folderName, object userState) {
+            if ((this.MoveToStorageSpaceOperationCompleted == null)) {
+                this.MoveToStorageSpaceOperationCompleted = new System.Threading.SendOrPostCallback(this.OnMoveToStorageSpaceOperationCompleted);
+            }
+            this.InvokeAsync("MoveToStorageSpace", new object[] {
+                        itemId,
+                        folderName}, this.MoveToStorageSpaceOperationCompleted, userState);
+        }
+        
+        private void OnMoveToStorageSpaceOperationCompleted(object arg) {
+            if ((this.MoveToStorageSpaceCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.MoveToStorageSpaceCompleted(this, new MoveToStorageSpaceCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/enterpriseserver/GetStatistics", RequestNamespace="http://smbsaas/websitepanel/enterpriseserver", ResponseNamespace="http://smbsaas/websitepanel/enterpriseserver", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
         public OrganizationStatistics GetStatistics(int itemId) {
             object[] results = this.Invoke("GetStatistics", new object[] {
@@ -2459,6 +2508,32 @@ namespace WebsitePanel.EnterpriseServer {
             get {
                 this.RaiseExceptionIfNecessary();
                 return ((string[])(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void MoveToStorageSpaceCompletedEventHandler(object sender, MoveToStorageSpaceCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class MoveToStorageSpaceCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal MoveToStorageSpaceCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public ResultObject Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((ResultObject)(this.results[0]));
             }
         }
     }

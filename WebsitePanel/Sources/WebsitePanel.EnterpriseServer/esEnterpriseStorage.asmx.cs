@@ -232,6 +232,12 @@ namespace WebsitePanel.EnterpriseServer
             return EnterpriseStorageController.GetUserEnterpriseFolderWithOwaEditPermission(itemId, accountIds);
         }
 
+        [WebMethod]
+        public ResultObject MoveToStorageSpace(int itemId, string folderName)
+        {
+           return EnterpriseStorageController.MoveToStorageSpace(itemId, folderName);
+        }
+
         #endregion
 
         #region Statistics
