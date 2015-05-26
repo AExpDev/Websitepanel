@@ -40,6 +40,8 @@ namespace WebsitePanel.EnterpriseServer {
         
         private System.Threading.SendOrPostCallback GetStorageSpaceLevelByIdOperationCompleted;
         
+        private System.Threading.SendOrPostCallback CheckIsStorageSpacePathInUseOperationCompleted;
+        
         private System.Threading.SendOrPostCallback SaveStorageSpaceLevelOperationCompleted;
         
         private System.Threading.SendOrPostCallback GetStorageSpaceFoldersByStorageSpaceIdOperationCompleted;
@@ -74,6 +76,9 @@ namespace WebsitePanel.EnterpriseServer {
         
         /// <remarks/>
         public event GetStorageSpaceLevelByIdCompletedEventHandler GetStorageSpaceLevelByIdCompleted;
+        
+        /// <remarks/>
+        public event CheckIsStorageSpacePathInUseCompletedEventHandler CheckIsStorageSpacePathInUseCompleted;
         
         /// <remarks/>
         public event SaveStorageSpaceLevelCompletedEventHandler SaveStorageSpaceLevelCompleted;
@@ -202,6 +207,53 @@ namespace WebsitePanel.EnterpriseServer {
             if ((this.GetStorageSpaceLevelByIdCompleted != null)) {
                 System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
                 this.GetStorageSpaceLevelByIdCompleted(this, new GetStorageSpaceLevelByIdCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://tempuri.org/CheckIsStorageSpacePathInUse", RequestNamespace="http://tempuri.org/", ResponseNamespace="http://tempuri.org/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public bool CheckIsStorageSpacePathInUse(int serverId, string path, int currentServiceId) {
+            object[] results = this.Invoke("CheckIsStorageSpacePathInUse", new object[] {
+                        serverId,
+                        path,
+                        currentServiceId});
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginCheckIsStorageSpacePathInUse(int serverId, string path, int currentServiceId, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("CheckIsStorageSpacePathInUse", new object[] {
+                        serverId,
+                        path,
+                        currentServiceId}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public bool EndCheckIsStorageSpacePathInUse(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void CheckIsStorageSpacePathInUseAsync(int serverId, string path, int currentServiceId) {
+            this.CheckIsStorageSpacePathInUseAsync(serverId, path, currentServiceId, null);
+        }
+        
+        /// <remarks/>
+        public void CheckIsStorageSpacePathInUseAsync(int serverId, string path, int currentServiceId, object userState) {
+            if ((this.CheckIsStorageSpacePathInUseOperationCompleted == null)) {
+                this.CheckIsStorageSpacePathInUseOperationCompleted = new System.Threading.SendOrPostCallback(this.OnCheckIsStorageSpacePathInUseOperationCompleted);
+            }
+            this.InvokeAsync("CheckIsStorageSpacePathInUse", new object[] {
+                        serverId,
+                        path,
+                        currentServiceId}, this.CheckIsStorageSpacePathInUseOperationCompleted, userState);
+        }
+        
+        private void OnCheckIsStorageSpacePathInUseOperationCompleted(object arg) {
+            if ((this.CheckIsStorageSpacePathInUseCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.CheckIsStorageSpacePathInUseCompleted(this, new CheckIsStorageSpacePathInUseCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
             }
         }
         
@@ -772,6 +824,32 @@ namespace WebsitePanel.EnterpriseServer {
             get {
                 this.RaiseExceptionIfNecessary();
                 return ((StorageSpaceLevel)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void CheckIsStorageSpacePathInUseCompletedEventHandler(object sender, CheckIsStorageSpacePathInUseCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class CheckIsStorageSpacePathInUseCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal CheckIsStorageSpacePathInUseCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public bool Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((bool)(this.results[0]));
             }
         }
     }

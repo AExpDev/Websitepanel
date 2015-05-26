@@ -408,17 +408,9 @@ namespace WebsitePanel.Providers.EnterpriseStorage
 
                             file.FullName = (reader[4] as string ?? string.Empty);
 
-                            if (isRootSearch)
-                            {
-                                file.RelativeUrl = file.FullName.Replace(rootFolder, "").Trim('\\');
-                            }
-                            else
-                            {
-                                foreach (var searchPath in searchPaths)
-                                {
-                                    file.RelativeUrl = file.FullName.Replace(Path.Combine(rootFolder, searchPath), "").Trim('\\');
-                                }
-                            }
+                            
+                            file.RelativeUrl = file.FullName.Replace(rootFolder, "").Trim('\\');
+                        
 
                             file.Summary = SanitizeXmlString(reader[6] as string);
 

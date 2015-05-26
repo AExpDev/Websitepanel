@@ -1101,7 +1101,7 @@ namespace WebsitePanel.EnterpriseServer
                 {
                     EnterpriseStorage es = GetEnterpriseStorage(GetEnterpriseStorageServiceID(org.PackageId));
 
-                    DataSet ds = DataProvider.GetEnterpriseFoldersPaged(itemId, "FolderName", filterValue, sortColumn, startRow, maximumRows);
+                    DataSet ds = DataProvider.GetEnterpriseFoldersPaged(itemId, "FolderName", string.Format("%{0}%", filterValue), sortColumn, startRow, maximumRows);
 
                     var esFolders = new List<EsFolder>();
 

@@ -47,14 +47,35 @@ namespace WebsitePanel.Providers.StorageSpaces
 
             try
             {
-                if (CheckFileServicesInstallation())
+
+                if (!CheckFileServicesInstallation())
                 {
+                    Log.WriteStart(String.Format("Installing FSRM"));
                     InstallFsrmService();
+                    Log.WriteEnd(String.Format("Installing FSRM"));
                 }
+                else
+                {
+                    Log.WriteInfo(String.Format("FSRM is Already Installed"));
+                }
+
+                if (!CheckWindowsFeatureInstallation("Search-Service"))
+                {
+                    Log.WriteStart(String.Format("Installing Search-Service"));
+                    InstallWindwosFeature("Search-Service");
+                    Log.WriteEnd(String.Format("Installing Search-Service"));
+                }
+                else
+                {
+                    Log.WriteInfo(String.Format("Search-Service is Already Installed"));
+                }
+
             }
             catch (Exception ex)
             {
-                messages.Add(String.Format("Error isntalling FSRM Service: {0}", ex.Message));
+                Log.WriteError(ex);
+                messages.Add(String.Format("Error installing Services for Storage Space Service: {0}", ex.Message));
+
             }
 
             return messages.ToArray();
@@ -115,7 +136,7 @@ namespace WebsitePanel.Providers.StorageSpaces
         {
             UpdateFolderQuota(fullPath, qouteSizeBytes, type);
         }
-
+        
         public void ClearStorageSettings(string fullPath, string uncPath)
         {
             Log.WriteStart("ClearStorageSettings");
@@ -307,7 +328,7 @@ namespace WebsitePanel.Providers.StorageSpaces
 
                 var scripts = new List<string>
                 {                
-                    string.Format("net share {0}=\"{1}\" \"/grant:NETWORK SERVICE,full\" \"/grant:{2},full\"",shareName, fullPath, WebdavSiteAppPoolIdentity)
+                    string.Format("net share {0}=\"{1}\" \"/grant:NETWORK SERVICE,full\" \"/grant:Everyone,full\" \"/grant:{2},full\"",shareName, fullPath, WebdavSiteAppPoolIdentity)
                 };
 
                 object[] errors = null;
@@ -634,5 +655,63 @@ namespace WebsitePanel.Providers.StorageSpaces
             );
         }
 
+        public bool CheckWindowsFeatureInstallation(string featureName)
+        {
+            bool isInstalled = false;
+
+            Runspace runSpace = null;
+            try
+            {
+                runSpace = OpenRunspace();
+
+                Command cmd = new Command("Get-WindowsFeature");
+                cmd.Parameters.Add("Name", featureName);
+
+                var feature = ExecuteShellCommand(runSpace, cmd, false).FirstOrDefault();
+
+                if (feature != null)
+                {
+                    isInstalled = (bool)GetPSObjectProperty(feature, "Installed");
+                }
+            }
+            finally
+            {
+                CloseRunspace(runSpace);
+            }
+
+            return isInstalled;
+        }
+
+
+        public bool InstallWindwosFeature(string featureName)
+        {
+            Log.WriteStart("InstallWindowsFeature  {0}", featureName);
+
+            Runspace runSpace = null;
+            try
+            {
+                runSpace = OpenRunspace();
+
+                Command cmd = new Command("Install-WindowsFeature");
+                cmd.Parameters.Add("Name", featureName);
+                cmd.Parameters.Add("IncludeManagementTools", true);
+
+                ExecuteShellCommand(runSpace, cmd, false);
+            }
+            catch (Exception ex)
+            {
+                Log.WriteError(string.Format("InstallWindowsFeature  {0}", featureName), ex);
+
+                return false;
+            }
+            finally
+            {
+                Log.WriteEnd("InstallWindowsFeature  {0}", featureName);
+
+                CloseRunspace(runSpace);
+            }
+
+            return true;
+        }
     }
 }

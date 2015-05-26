@@ -3909,7 +3909,7 @@ namespace WebsitePanel.Providers.Web
         {
             var uri = new Uri(siteId);
             var host = uri.Host;
-            var site = uri.Host + uri.PathAndQuery;
+            var site = uri.Host + Uri.UnescapeDataString(uri.PathAndQuery);
 
             if (SiteExists(host))
             {

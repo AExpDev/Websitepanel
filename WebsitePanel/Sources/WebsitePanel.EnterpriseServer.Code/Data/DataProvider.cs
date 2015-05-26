@@ -4938,6 +4938,18 @@ namespace WebsitePanel.EnterpriseServer
             );
         }
 
+        public static IDataReader GetStorageSpaceByServiceAndPath(int serverId, string path)
+        {
+            return SqlHelper.ExecuteReader(
+                ConnectionString,
+                CommandType.StoredProcedure,
+                "GetStorageSpaceByServiceAndPath",
+                new SqlParameter("@ServerId", serverId),
+                new SqlParameter("@Path", path)
+
+            );
+        }
+
         public static int UpdateStorageSpace(StorageSpace space)
         {
             SqlHelper.ExecuteNonQuery(

@@ -15,7 +15,7 @@ namespace WebsitePanel.Portal
 
         public StorageSpaceLevel[] GetStorageSpaceLevelsPaged(int maximumRows, int startRowIndex, string sortColumn, string filterValue)
         {
-            ssLevels = ES.Services.StorageSpaces.GetStorageSpaceLevelsPaged("", filterValue, sortColumn, startRowIndex, maximumRows);
+            ssLevels = ES.Services.StorageSpaces.GetStorageSpaceLevelsPaged("Name", filterValue, sortColumn, startRowIndex, maximumRows);
 
             return ssLevels.Levels;
         }
@@ -33,7 +33,7 @@ namespace WebsitePanel.Portal
 
         public StorageSpace[] GetStorageSpacePaged(int maximumRows, int startRowIndex, string sortColumn, string filterValue)
         {
-            sSpaces = ES.Services.StorageSpaces.GetStorageSpacesPaged("", filterValue, sortColumn, startRowIndex, maximumRows);
+            sSpaces = ES.Services.StorageSpaces.GetStorageSpacesPaged("Name", filterValue, sortColumn, startRowIndex, maximumRows);
 
             return sSpaces.Spaces;
         }

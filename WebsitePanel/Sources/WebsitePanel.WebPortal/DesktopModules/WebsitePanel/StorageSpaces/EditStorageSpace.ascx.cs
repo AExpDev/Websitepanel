@@ -13,8 +13,6 @@ namespace WebsitePanel.Portal.StorageSpaces
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // servers.Module = Module;
-
             if (!Page.IsPostBack)
             {
                 var services = ES.Services.Servers.GetRawServicesByGroupId(EnterpriseServer.ServiceGroupIds.StorageSpace);
@@ -30,7 +28,6 @@ namespace WebsitePanel.Portal.StorageSpaces
                 {
                     ddlSsLevel.Items.Add(new ListItem(level.Name, level.Id.ToString()));
                 }
-
 
                 string path = string.Empty;
                 var storage = ES.Services.StorageSpaces.GetStorageSpaceById(PanelRequest.StorageSpaceId);
@@ -52,8 +49,8 @@ namespace WebsitePanel.Portal.StorageSpaces
                     }
 
                     ddlStorageService.SelectedValue = storage.ServiceId.ToString();
+                    ddlStorageService.Enabled = false;
                     ddlSsLevel.SelectedValue = storage.LevelId.ToString();
-
                 }
 
                 var serviceId = Utils.ParseInt(ddlStorageService.SelectedValue);
@@ -61,6 +58,8 @@ namespace WebsitePanel.Portal.StorageSpaces
                 if (serviceId > 0)
                 {
                     RefreshTreeView(serviceId, path);
+
+                    FoldersTree.Enabled = !CheckStorageIsInUse(PanelRequest.StorageSpaceId);
                 }
             }
         }
@@ -225,8 +224,12 @@ namespace WebsitePanel.Portal.StorageSpaces
             storage.Id = PanelRequest.StorageSpaceId;
             storage.Name = txtName.Text;
             storage.LevelId = Utils.ParseInt(ddlSsLevel.SelectedValue);
-            storage.ServiceId = Utils.ParseInt(ddlStorageService.SelectedValue);
-            storage.Path = GetCheckedNodeValue(FoldersTree.Nodes);
+
+            if (PanelRequest.StorageSpaceId < 1 || !CheckStorageIsInUse(PanelRequest.StorageSpaceId))
+            {
+                storage.ServiceId = Utils.ParseInt(ddlStorageService.SelectedValue);
+                storage.Path = GetCheckedNodeValue(FoldersTree.Nodes);
+            }
 
             var serviceInfo = ES.Services.Servers.GetServiceInfo(storage.ServiceId);
 
@@ -314,6 +317,19 @@ namespace WebsitePanel.Portal.StorageSpaces
             {
                 RefreshTreeView(serviceId);
             }
+        }
+
+        protected bool CheckStorageIsInUse(int storageId)
+        {
+            return ES.Services.StorageSpaces.GetStorageSpaceFoldersByStorageSpaceId(storageId).Any();
+        }
+
+        protected void valPathIsInUseFolder_ServerValidate(object source, ServerValidateEventArgs args)
+        {
+            var service = ES.Services.Servers .GetServiceInfo(Utils.ParseInt(ddlStorageService.SelectedValue));
+            var path = GetCheckedNodeValue(FoldersTree.Nodes);
+
+            args.IsValid = !ES.Services.StorageSpaces.CheckIsStorageSpacePathInUse(service.ServerId, path, PanelRequest.StorageSpaceId);
         }
     }
 }

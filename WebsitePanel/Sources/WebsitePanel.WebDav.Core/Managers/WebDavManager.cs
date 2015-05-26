@@ -332,7 +332,7 @@ namespace WebsitePanel.WebDav.Core.Managers
 
                 webDavitem.SetCredentials(credentials);
 
-                webDavitem.SetHref(baseUri.Append(file.RelativeUrl.Replace("\\","/")));
+                webDavitem.SetHref(baseUri.Append(WspContext.User.OrganizationId).Append(file.RelativeUrl.Replace("\\","/")));
 
                 webDavitem.SetItemType(file.IsDirectory? ItemType.Folder : ItemType.Resource);
                 webDavitem.SetLastModified(file.Changed);

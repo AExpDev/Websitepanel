@@ -11296,7 +11296,7 @@ SELECT
 FROM StorageSpaceLevels AS S'
 
 IF @FilterColumn <> '' AND @FilterValue <> ''
-SET @sql = @sql + ' AND ' + @FilterColumn + ' LIKE @FilterValue '
+SET @sql = @sql + ' WHERE ' + @FilterColumn + ' LIKE @FilterValue '
 
 IF @SortColumn <> '' AND @SortColumn IS NOT NULL
 SET @sql = @sql + ' ORDER BY ' + @SortColumn + ' '
@@ -11582,7 +11582,7 @@ SELECT
 FROM StorageSpaces AS S'
 
 IF @FilterColumn <> '' AND @FilterValue <> ''
-SET @sql = @sql + ' AND ' + @FilterColumn + ' LIKE @FilterValue '
+SET @sql = @sql + ' WHERE ' + @FilterColumn + ' LIKE @FilterValue '
 
 IF @SortColumn <> '' AND @SortColumn IS NOT NULL
 SET @sql = @sql + ' ORDER BY ' + @SortColumn + ' '
@@ -11771,6 +11771,29 @@ FROM StorageSpaces AS SS
 INNER JOIN StorageSpaceLevelResourceGroups AS SSLRG ON SSLRG.LevelId = SS.LevelId
 INNER JOIN ResourceGroups AS RG ON SSLRG.GroupID = RG.GroupID
 WHERE RG.GroupName = @ResourceGroupName
+GO
+
+IF EXISTS (SELECT * FROM SYS.OBJECTS  WHERE type = 'P' AND name = 'GetStorageSpaceByServiceAndPath')
+DROP PROCEDURE GetStorageSpaceByServiceAndPath
+GO
+CREATE PROCEDURE GetStorageSpaceByServiceAndPath 
+(
+	@ServerId INT,
+	@Path varchar(max)
+)
+AS
+SELECT TOP 1
+		SS.Id,
+		SS.Name ,
+		SS.ServiceId ,
+		SS.ServerId ,
+		SS.LevelId,
+		SS.Path,
+		SS.FsrmQuotaType,
+		SS.FsrmQuotaSizeBytes,
+		ISNULL((SELECT SUM(SSF.FsrmQuotaSizeBytes) FROM StorageSpaceFolders AS SSF WHERE SSF.StorageSpaceId = SS.Id), 0) UsedSizeBytes
+FROM StorageSpaces AS SS
+WHERE SS.ServerId = @ServerId AND SS.Path = @Path
 GO
 
 -- STORAGE SPACE FOLDER

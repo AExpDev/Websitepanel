@@ -34,6 +34,12 @@ namespace WebsitePanel.EnterpriseServer
         }
 
         [WebMethod]
+        public bool CheckIsStorageSpacePathInUse(int serverId, string path, int currentServiceId)
+        {
+            return StorageSpacesController.CheckIsStorageSpacePathInUse(serverId, path, currentServiceId);
+        }
+
+        [WebMethod]
         public IntResult SaveStorageSpaceLevel(StorageSpaceLevel level, List<ResourceGroupInfo> groups )
         {
             return StorageSpacesController.SaveStorageSpaceLevel(level, groups);

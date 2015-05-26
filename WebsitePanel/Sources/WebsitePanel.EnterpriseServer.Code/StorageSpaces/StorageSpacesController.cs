@@ -22,7 +22,7 @@ namespace WebsitePanel.EnterpriseServer
 
         private static StorageSpaceLevelPaged GetStorageSpaceLevelsPagedInternal(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
         {
-            DataSet ds = DataProvider.GetStorageSpaceLevelsPaged(filterColumn, filterValue, sortColumn, startRow, maximumRows);
+            DataSet ds = DataProvider.GetStorageSpaceLevelsPaged(filterColumn, string.Format("%{0}%", filterValue), sortColumn, startRow, maximumRows);
 
             var result = new StorageSpaceLevelPaged
             {
@@ -218,7 +218,7 @@ namespace WebsitePanel.EnterpriseServer
 
         private static StorageSpacesPaged GetStorageSpacePagedInternal(string filterColumn, string filterValue, string sortColumn, int startRow, int maximumRows)
         {
-            DataSet ds = DataProvider.GetStorageSpacesPaged(filterColumn, filterValue, sortColumn, startRow, maximumRows);
+            DataSet ds = DataProvider.GetStorageSpacesPaged(filterColumn, string.Format("%{0}%", filterValue), sortColumn, startRow, maximumRows);
 
             var result = new StorageSpacesPaged
             {
@@ -258,6 +258,18 @@ namespace WebsitePanel.EnterpriseServer
         private static StorageSpace GetStorageSpaceByIdInternal(int id)
         {
             return ObjectUtils.FillObjectFromDataReader<StorageSpace>(DataProvider.GetStorageSpaceById(id));
+        }
+
+        public static bool CheckIsStorageSpacePathInUse(int serverId, string path, int currentServiceId)
+        {
+            return CheckIsPathInUseInternal(serverId, path, currentServiceId);
+        }
+
+        private static bool CheckIsPathInUseInternal(int serverId, string path, int currentStorageSpaceId)
+        {
+            var storage = ObjectUtils.FillObjectFromDataReader<StorageSpace>(DataProvider.GetStorageSpaceByServiceAndPath(serverId, path));
+
+            return storage != null && storage.Id != currentStorageSpaceId;
         }
 
         public static IntResult SaveStorageSpace(StorageSpace space)
@@ -398,7 +410,7 @@ namespace WebsitePanel.EnterpriseServer
                     throw new Exception(string.Format("Storage spaces not found for '{0}' resource group", groupName));
                 }
 
-                var orderedStorages = storages.OrderBy(x => x.FsrmQuotaSizeBytes - x.UsedSizeBytes);
+                var orderedStorages = storages.OrderByDescending(x => x.FsrmQuotaSizeBytes - x.UsedSizeBytes);
 
                 var bestStorage = orderedStorages.First();
 
@@ -467,6 +479,8 @@ namespace WebsitePanel.EnterpriseServer
                 ss.CreateFolder(fullPath);
 
                 ss.UpdateFolderQuota(fullPath, quotaInBytes, quotaType);
+
+                //ss.
 
                 result.Value = DataProvider.CreateStorageSpaceFolder(folderName, storageSpace.Id, fullPath, uncPath, false, quotaType, quotaInBytes);
             }
@@ -912,7 +926,7 @@ namespace WebsitePanel.EnterpriseServer
 
             foreach (var result in searchResults)
             {
-                result.RelativeUrl = result.FullName.Replace(storageSpaceFolder.Path, origSearchPath);
+                result.RelativeUrl = result.FullName.Replace(storageSpaceFolder.Path, Path.GetFileName(storageSpaceFolder.Path));
             }
 
             return searchResults;
