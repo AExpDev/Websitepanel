@@ -70,9 +70,17 @@
             </ItemTemplate>
         </asp:TemplateField>
         
+        <asp:TemplateField SortExpression="UsedSizeBytes" HeaderText="Used Space">
+            <HeaderStyle Wrap="false" />
+            <ItemStyle Wrap="False" Width="20%" />
+            <ItemTemplate>
+                <asp:Label runat="server"><%# (ConvertBytesToGB(Eval("UsedSizeBytes"))) + " Gb"%></asp:Label>
+            </ItemTemplate>
+        </asp:TemplateField>
+
        <asp:TemplateField SortExpression="FsrmQuotaSizeBytes" HeaderText="Allocated Space">
             <HeaderStyle Wrap="false" />
-            <ItemStyle Wrap="False" Width="30%" />
+            <ItemStyle Wrap="False" Width="20%" />
             <ItemTemplate>
                 <asp:Label runat="server"><%# (ConvertBytesToGB(Eval("FsrmQuotaSizeBytes"))) + " Gb"%></asp:Label>
             </ItemTemplate>

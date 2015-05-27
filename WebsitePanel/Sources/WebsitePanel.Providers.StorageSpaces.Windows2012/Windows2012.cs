@@ -11,6 +11,7 @@ using System.Management.Automation.Runspaces;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
+using Microsoft.Search.Interop;
 using WebsitePanel.Providers.OS;
 using WebsitePanel.Providers.Utils;
 using WebsitePanel.Server.Utils;
@@ -135,6 +136,8 @@ namespace WebsitePanel.Providers.StorageSpaces
         public void UpdateStorageSettings(string fullPath, long qouteSizeBytes, QuotaType type)
         {
             UpdateFolderQuota(fullPath, qouteSizeBytes, type);
+
+            AddPathToSearchIndex(fullPath);
         }
         
         public void ClearStorageSettings(string fullPath, string uncPath)
@@ -541,6 +544,21 @@ namespace WebsitePanel.Providers.StorageSpaces
             return result.ToArray();
         }
 
+        public void AddPathToSearchIndex(string fullPath)
+        {
+            Uri path = new Uri(fullPath);
+
+            string indexingPath = path.ToString();
+
+            CSearchManager csm = new CSearchManager();
+            CSearchCrawlScopeManager manager = csm.GetCatalog("SystemIndex").GetCrawlScopeManager();
+
+            if (manager.IncludedInCrawlScope(indexingPath) == 0)
+            {
+                manager.AddUserScopeRule(indexingPath, 1, 1, 0);
+                manager.SaveAll();
+            }
+        }
 
         #endregion
 

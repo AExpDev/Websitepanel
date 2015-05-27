@@ -11598,7 +11598,8 @@ SELECT
 		CR.FsrmQuotaType,
 		CR.FsrmQuotaSizeBytes,
 		CR.IsShared,
-		CR.UncPath
+		CR.UncPath,
+		ISNULL((SELECT SUM(SSF.FsrmQuotaSizeBytes) FROM StorageSpaceFolders AS SSF WHERE SSF.StorageSpaceId = CR.Id), 0) UsedSizeBytes
 FROM @Spaces AS C
 INNER JOIN StorageSpaces AS CR ON C.SpaceId = CR.Id
 WHERE C.ItemPosition BETWEEN @StartRow AND @EndRow'
@@ -11630,7 +11631,8 @@ SELECT
 		SS.FsrmQuotaType,
 		SS.FsrmQuotaSizeBytes,
 		SS.IsShared,
-		SS.UncPath
+		SS.UncPath,
+		ISNULL((SELECT SUM(SSF.FsrmQuotaSizeBytes) FROM StorageSpaceFolders AS SSF WHERE SSF.StorageSpaceId = SS.Id), 0) UsedSizeBytes
 FROM StorageSpaces AS SS
 INNER JOIN StorageSpaceLevels AS SSL
 ON SSL.Id = SS.LevelId
@@ -11658,7 +11660,8 @@ AS
 		SS.FsrmQuotaType,
 		SS.FsrmQuotaSizeBytes,
 		SS.IsShared,
-		SS.UncPath
+		SS.UncPath,
+		ISNULL((SELECT SUM(SSF.FsrmQuotaSizeBytes) FROM StorageSpaceFolders AS SSF WHERE SSF.StorageSpaceId = SS.Id), 0) UsedSizeBytes
 	FROM [dbo].[StorageSpaces] AS SS
 	WHERE SS.Id = @Id
 GO
