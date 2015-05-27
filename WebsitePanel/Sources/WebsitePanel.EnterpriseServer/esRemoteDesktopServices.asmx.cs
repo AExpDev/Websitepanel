@@ -386,5 +386,17 @@ namespace WebsitePanel.EnterpriseServer
         {
             return RemoteDesktopServicesController.ShadowSession(itemId, sessionId, control);
         }
+
+        [WebMethod]
+        public ResultObject ImportCollection(int itemId, string collectionName)
+        {
+            return RemoteDesktopServicesController.ImportCollection(itemId, collectionName);
+        }
+
+        [WebMethod]
+        public int GetRemoteDesktopServiceId(int itemId)
+        {
+            return RemoteDesktopServicesController.GetRemoteDesktopServiceId(itemId);
+        }
     }
 }

@@ -326,6 +326,15 @@ namespace WebsitePanel.EnterpriseServer
                 filterColumn, filterValue, statusId, roleId, sortColumn, startRow, 
                 maximumRows, colType, fullType, false, onlyFind);
         }
+        public static DataSet GetSearchTableByColumns(string PagedStored, string FilterValue, int MaximumRows,
+            bool Recursive, int PoolID, int ServerID, int StatusID, int PlanID, int OrgID,
+            string ItemTypeName, string GroupName, int PackageID, string VPSType, int RoleID, int UserID,
+            string FilterColumns)
+        {
+            return DataProvider.GetSearchTableByColumns(PagedStored, FilterValue, MaximumRows,
+                Recursive, PoolID, ServerID, SecurityContext.User.UserId, StatusID, PlanID, OrgID, ItemTypeName, GroupName,
+                PackageID, VPSType, RoleID, UserID, FilterColumns);
+        }
         //TODO END
 
         public static DataSet GetPackageQuotas(int packageId)
@@ -422,7 +431,7 @@ namespace WebsitePanel.EnterpriseServer
                     return result;
 
                 // load user info
-                UserInfo user = UserController.GetUser(userId);
+                UserInfoInternal user = UserController.GetUser(userId);
 
                 if (createFtpAccount)
                 {
@@ -2086,7 +2095,7 @@ namespace WebsitePanel.EnterpriseServer
             items["user"] = user;
 
             // get reseller details
-            UserInfo reseller = UserController.GetUser(user.OwnerId);
+            UserInfoInternal reseller = UserController.GetUser(user.OwnerId);
             if (reseller != null)
             {
                 reseller.Password = "";
@@ -2123,7 +2132,7 @@ namespace WebsitePanel.EnterpriseServer
             items["user"] = user;
 
             // get reseller details
-            UserInfo reseller = UserController.GetUser(user.OwnerId);
+            UserInfoInternal reseller = UserController.GetUser(user.OwnerId);
             if (reseller != null)
             {
                 reseller.Password = "";

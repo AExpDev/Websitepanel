@@ -49,6 +49,7 @@ using WebsitePanel.Providers.HostedSolution;
 using WebsitePanel.Providers.Utils;
 using WebsitePanel.Server.Utils;
 using WebsitePanel.Providers.Common;
+using WebsitePanel.Providers.ResultObjects;
 
 using Microsoft.Exchange.Data.Directory.Recipient;
 using Microsoft.Win32;
@@ -4479,7 +4480,7 @@ namespace WebsitePanel.Providers.HostedSolution
         {
             ExchangeLog.LogStart("CheckOrganizationPublicFolderMailbox");
 
-            Collection<PSObject> result = GetPublicFolderMailbox(runSpace, orgCanonicalName, GetPublicFolderMailboxName(organizationId));
+            Collection<PSObject> result = GetPublicFolderMailbox(runSpace, orgCanonicalName, GetPublicFolderMailboxName(organizationId), true);
             if (result == null || result.Count == 0)
             {
                 ExchangeTransaction transaction = StartTransaction();
@@ -4501,7 +4502,7 @@ namespace WebsitePanel.Providers.HostedSolution
         {
             ExchangeLog.LogStart("CheckOrganizationRootFolder");
 
-            Collection<PSObject> result = GetPublicFolderObject(runSpace, orgCanonicalName+"/"+GetPublicFolderMailboxName(organizationId), "\\" + folder);
+            Collection<PSObject> result = GetPublicFolderObject(runSpace, orgCanonicalName+"/"+GetPublicFolderMailboxName(organizationId), "\\" + folder, true);
             if (result == null || result.Count == 0)
             {
                 ExchangeTransaction transaction = StartTransaction();
@@ -4617,22 +4618,22 @@ namespace WebsitePanel.Providers.HostedSolution
             ExchangeLog.LogEnd("DeletePublicFolderInternal");
         }
 
-        private Collection<PSObject> GetPublicFolderObject(Runspace runSpace, string mailbox, string id)
+        private Collection<PSObject> GetPublicFolderObject(Runspace runSpace, string mailbox, string id, bool checkExist = false)
         {
             Command cmd = new Command("Get-PublicFolder");
             cmd.Parameters.Add("Identity", id);
             //cmd.Parameters.Add("Mailbox", mailbox);
-            Collection<PSObject> result = ExecuteShellCommand(runSpace, cmd);
+            Collection<PSObject> result = ExecuteShellCommand(runSpace, cmd, true, !checkExist);
             return result;
         }
 
-        private Collection<PSObject> GetPublicFolderMailbox(Runspace runSpace, string organizationDistinguishedName, string name)
+        private Collection<PSObject> GetPublicFolderMailbox(Runspace runSpace, string organizationDistinguishedName, string name, bool checkExist)
         {
             Command cmd = new Command("Get-Mailbox");
             cmd.Parameters.Add("Identity", name);
             cmd.Parameters.Add("PublicFolder");
             cmd.Parameters.Add("OrganizationalUnit", organizationDistinguishedName);
-            Collection<PSObject> result = ExecuteShellCommand(runSpace, cmd);
+            Collection<PSObject> result = ExecuteShellCommand(runSpace, cmd, true, !checkExist);
             return result;
         }
 
@@ -5369,7 +5370,7 @@ namespace WebsitePanel.Providers.HostedSolution
             string resultObjectDN = null;
             Command cmd = new Command("Get-AddressList");
             cmd.Parameters.Add("Identity", id);
-            Collection<PSObject> result = this.ExecuteShellCommand(runSpace, cmd);
+            Collection<PSObject> result = this.ExecuteShellCommand(runSpace, cmd, true, false);
             if ((result != null) && (result.Count > 0))
             {
                 resultObjectDN = this.GetResultObjectDN(result);
@@ -6242,13 +6243,19 @@ namespace WebsitePanel.Providers.HostedSolution
 
         internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd)
         {
-            return ExecuteShellCommand(runSpace, cmd, true);
+            return ExecuteShellCommand(runSpace, cmd, true, true);
         }
 
         internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, bool useDomainController)
         {
             object[] errors;
-            return ExecuteShellCommand(runSpace, cmd, useDomainController, out errors);
+            return ExecuteShellCommand(runSpace, cmd, useDomainController, out errors, true);
+        }
+
+        internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, bool useDomainController, bool writeErrorExchangeLog)
+        {
+            object[] errors;
+            return ExecuteShellCommand(runSpace, cmd, useDomainController, out errors, writeErrorExchangeLog);
         }
 
         internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, ResultObject res)
@@ -6272,10 +6279,10 @@ namespace WebsitePanel.Providers.HostedSolution
 
         internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, out object[] errors)
         {
-            return ExecuteShellCommand(runSpace, cmd, true, out errors);
+            return ExecuteShellCommand(runSpace, cmd, true, out errors, true);
         }
 
-        internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, bool useDomainController, out object[] errors)
+        internal Collection<PSObject> ExecuteShellCommand(Runspace runSpace, Command cmd, bool useDomainController, out object[] errors, bool writeErrorExchangeLog)
         {
             ExchangeLog.LogStart("ExecuteShellCommand");
             List<object> errorList = new List<object>();
@@ -6309,8 +6316,12 @@ namespace WebsitePanel.Providers.HostedSolution
                     foreach (object item in pipeLine.Error.ReadToEnd())
                     {
                         errorList.Add(item);
-                        string errorMessage = string.Format("Invoke error: {0}", item);
-                        ExchangeLog.LogWarning(errorMessage);
+
+                        if (writeErrorExchangeLog)
+                        {
+                            string errorMessage = string.Format("Invoke error: {0}", item);
+                            ExchangeLog.LogWarning(errorMessage);
+                        }
                     }
                 }
             }
@@ -7957,6 +7968,67 @@ namespace WebsitePanel.Providers.HostedSolution
             return 0;
         }
 
+        #endregion
+
+        #region Picture
+        public virtual ResultObject SetPicture(string accountName, byte[] picture)
+        {
+            ExchangeLog.LogStart("SetPicture");
+
+            ResultObject res = new ResultObject() { IsSuccess = true };
+
+            Runspace runSpace = null;
+            try
+            {
+                runSpace = OpenRunspace();
+                Command cmd;
+                cmd = new Command("Import-RecipientDataProperty");
+                cmd.Parameters.Add("Identity", accountName);
+                cmd.Parameters.Add("Picture", true);
+                cmd.Parameters.Add("FileData", picture);
+                ExecuteShellCommand(runSpace, cmd, res);
+            }
+            finally
+            {
+                CloseRunspace(runSpace);
+            }
+            ExchangeLog.LogEnd("SetPicture");
+
+            return res;
+        }
+        public virtual BytesResult GetPicture(string accountName)
+        {
+            ExchangeLog.LogStart("GetPicture");
+
+            BytesResult res = new BytesResult() { IsSuccess = true };
+
+            Runspace runSpace = null;
+            try
+            {
+                runSpace = OpenRunspace();
+
+                Command cmd;
+
+                cmd = new Command("Export-RecipientDataProperty");
+                cmd.Parameters.Add("Identity", accountName);
+                cmd.Parameters.Add("Picture", true);
+                Collection<PSObject> result = ExecuteShellCommand(runSpace, cmd, res);
+
+                if (result.Count > 0)
+                {
+                    res.Value =
+                    ((Microsoft.Exchange.Data.BinaryFileDataObject)
+                     (result[0].ImmediateBaseObject)).FileData;
+                }
+            }
+            finally
+            {
+                CloseRunspace(runSpace);
+            }
+            ExchangeLog.LogEnd("GetPicture");
+
+            return res;
+        }
         #endregion
 
     }

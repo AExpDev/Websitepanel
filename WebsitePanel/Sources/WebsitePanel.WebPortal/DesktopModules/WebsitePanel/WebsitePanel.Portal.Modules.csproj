@@ -337,8 +337,15 @@
       <DependentUpon>StorageSpaceServices_Settings.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="RDS\RDSImportCollection.ascx.cs">
+      <DependentUpon>RDSImportCollection.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="ProviderControls\StorageSpaceServices_Settings.ascx.designer.cs">
       <DependentUpon>StorageSpaceServices_Settings.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="RDS\RDSImportCollection.ascx.designer.cs">
+      <DependentUpon>RDSImportCollection.ascx</DependentUpon>
     </Compile>
     <Compile Include="SettingsUserPasswordRequestLetter.ascx.cs">
       <DependentUpon>SettingsUserPasswordRequestLetter.ascx</DependentUpon>
@@ -346,6 +353,9 @@
     </Compile>
     <Compile Include="SettingsUserPasswordRequestLetter.ascx.designer.cs">
       <DependentUpon>SettingsUserPasswordRequestLetter.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="ThumbnailPhoto.ashx.cs">
+      <DependentUpon>ThumbnailPhoto.ashx</DependentUpon>
     </Compile>
     <Compile Include="StorageSpaces\EditStorageSpace.ascx.cs">
       <DependentUpon>EditStorageSpace.ascx</DependentUpon>
@@ -4958,6 +4968,7 @@
     <Content Include="HostedSharePoint\HostedSharePointEnterpriseRestoreSiteCollection.ascx" />
     <Content Include="HostedSharePoint\HostedSharePointEnterpriseStorageSettings.ascx" />
     <Content Include="HostedSharePoint\HostedSharePointEnterpriseStorageUsage.ascx" />
+    <Content Include="RDS\RDSImportCollection.ascx" />
     <Content Include="ProviderControls\StorageSpaceServices_Settings.ascx" />
     <Content Include="SettingsUserPasswordRequestLetter.ascx" />
     <Content Include="StorageSpaces\EditStorageSpace.ascx" />
@@ -5135,6 +5146,7 @@
     <Content Include="RDS\App_LocalResources\RDSLocalAdmins.ascx.resx" />
     <Content Include="RDS\App_LocalResources\RDSSetupLetter.ascx.resx" />
     <Content Include="RDS\App_LocalResources\RDSEditUserExperience.ascx.resx" />
+    <Content Include="RDS\App_LocalResources\RDSImportCollection.ascx.resx" />
     <EmbeddedResource Include="ScheduleTaskControls\App_LocalResources\DomainLookupView.ascx.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>DomainLookupView.ascx.Designer.cs</LastGenOutput>
@@ -6594,7 +6606,9 @@
     <Content Include="RDS\UserControls\App_LocalResources\RDSCollectionApps.ascx.resx">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="ProviderControls\App_LocalResources\RDS_Settings.ascx.resx" />
+    <Content Include="ProviderControls\App_LocalResources\RDS_Settings.ascx.resx">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="UserControls\App_LocalResources\DomainControl.ascx.resx">
       <SubType>Designer</SubType>
     </Content>
@@ -7563,6 +7577,7 @@
     <Content Include="VPSForPC\VirtualMachineSnapshotImage.ashx" />
     <Content Include="VPS2012\VirtualMachineImage.ashx" />
     <Content Include="VPS2012\VirtualMachineSnapshotImage.ashx" />
+    <Content Include="ThumbnailPhoto.ashx" />
     <None Include="Web.config">
       <SubType>Designer</SubType>
     </None>

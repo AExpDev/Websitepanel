@@ -73,7 +73,7 @@
 							<td>
 								<asp:TextBox ID="txtFirstName" runat="server" CssClass="TextBox100"  onKeyUp="buildDisplayName();"></asp:TextBox>
 								&nbsp;
-								<asp:Localize ID="locInitials" runat="server" meta:resourcekey="locInitials" Text="Initials:" />
+								<asp:Localize ID="locInitials" runat="server" meta:resourcekey="locInitials" Text="Middle Initial:" />
 								<asp:TextBox ID="txtInitials" runat="server" MaxLength="6" CssClass="TextBox100"  onKeyUp="buildDisplayName();"></asp:TextBox>
 							</td>
 						</tr>
@@ -106,19 +106,19 @@
                                 </wsp:EmailAddress>
                             </td>
 						</tr>
-						<tr>
-							<td class="FormLabel150" valign="top"><asp:Localize ID="locPassword" runat="server" meta:resourcekey="locPassword" Text="Password: *"></asp:Localize></td>
-							<td>
-                                <wsp:PasswordControl id="password" runat="server" ValidationGroup="CreateMailbox" AllowGeneratePassword="true">
-                                </wsp:PasswordControl>
-						        <asp:CheckBox ID="chkUserMustChangePassword" runat="server" meta:resourcekey="chkUserMustChangePassword" Text="User must change password at next login" />
-                            </td>
-						</tr>
                         <tr>
                             <td colspan="2">
-                                <wsp:SendToControl id="sendToControl" runat="server" ValidationGroup="CreateMailbox" ControlToHide="password"></wsp:SendToControl>
+                                <wsp:SendToControl id="sendToControl" runat="server" ValidationGroup="CreateMailbox" ControlToHide="PasswordBlock"></wsp:SendToControl>
                             </td>
                         </tr>
+						<tr id="PasswordBlock" runat="server" Visible="false">
+							<td class="FormLabel150" valign="top"><asp:Localize ID="locPassword" runat="server" meta:resourcekey="locPassword" Text="Password: *"></asp:Localize></td>
+							<td>
+                                <wsp:PasswordControl id="password" runat="server" ValidationGroup="CreateMailbox" AllowGeneratePassword="false">
+                                </wsp:PasswordControl>
+						        <asp:CheckBox ID="chkUserMustChangePassword" runat="server" meta:resourcekey="chkUserMustChangePassword" Text="User must change password at next login" Visible="False"/>
+                            </td>
+						</tr>
 						<tr>
 							<td class="FormLabel150" valign="top"><asp:Localize ID="locMailboxType" runat="server" meta:resourcekey="locMailboxType" Text="Choose mailbox type:"></asp:Localize></td>
 							<td>

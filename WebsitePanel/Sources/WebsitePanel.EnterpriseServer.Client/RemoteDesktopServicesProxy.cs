@@ -20,8 +20,8 @@ namespace WebsitePanel.EnterpriseServer {
     using System.Diagnostics;
     using WebsitePanel.Providers.RemoteDesktopServices;
     using WebsitePanel.Providers.Common;
-    using WebsitePanel.EnterpriseServer.Base.RDS;
     using WebsitePanel.Providers.HostedSolution;
+    using WebsitePanel.EnterpriseServer.Base.RDS;
     
     
     /// <remarks/>
@@ -138,6 +138,10 @@ namespace WebsitePanel.EnterpriseServer {
         private System.Threading.SendOrPostCallback UpdateRdsServerSettingsOperationCompleted;
         
         private System.Threading.SendOrPostCallback ShadowSessionOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback ImportCollectionOperationCompleted;
+        
+        private System.Threading.SendOrPostCallback GetRemoteDesktopServiceIdOperationCompleted;
         
         /// <remarks/>
         public esRemoteDesktopServices() {
@@ -305,6 +309,12 @@ namespace WebsitePanel.EnterpriseServer {
         
         /// <remarks/>
         public event ShadowSessionCompletedEventHandler ShadowSessionCompleted;
+        
+        /// <remarks/>
+        public event ImportCollectionCompletedEventHandler ImportCollectionCompleted;
+        
+        /// <remarks/>
+        public event GetRemoteDesktopServiceIdCompletedEventHandler GetRemoteDesktopServiceIdCompleted;
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/enterpriseserver/GetRdsCollection", RequestNamespace="http://smbsaas/websitepanel/enterpriseserver", ResponseNamespace="http://smbsaas/websitepanel/enterpriseserver", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
@@ -2724,6 +2734,91 @@ namespace WebsitePanel.EnterpriseServer {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/enterpriseserver/ImportCollection", RequestNamespace="http://smbsaas/websitepanel/enterpriseserver", ResponseNamespace="http://smbsaas/websitepanel/enterpriseserver", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public ResultObject ImportCollection(int itemId, string collectionName) {
+            object[] results = this.Invoke("ImportCollection", new object[] {
+                        itemId,
+                        collectionName});
+            return ((ResultObject)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginImportCollection(int itemId, string collectionName, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("ImportCollection", new object[] {
+                        itemId,
+                        collectionName}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public ResultObject EndImportCollection(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((ResultObject)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void ImportCollectionAsync(int itemId, string collectionName) {
+            this.ImportCollectionAsync(itemId, collectionName, null);
+        }
+        
+        /// <remarks/>
+        public void ImportCollectionAsync(int itemId, string collectionName, object userState) {
+            if ((this.ImportCollectionOperationCompleted == null)) {
+                this.ImportCollectionOperationCompleted = new System.Threading.SendOrPostCallback(this.OnImportCollectionOperationCompleted);
+            }
+            this.InvokeAsync("ImportCollection", new object[] {
+                        itemId,
+                        collectionName}, this.ImportCollectionOperationCompleted, userState);
+        }
+        
+        private void OnImportCollectionOperationCompleted(object arg) {
+            if ((this.ImportCollectionCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.ImportCollectionCompleted(this, new ImportCollectionCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/enterpriseserver/GetRemoteDesktopServiceId", RequestNamespace="http://smbsaas/websitepanel/enterpriseserver", ResponseNamespace="http://smbsaas/websitepanel/enterpriseserver", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public int GetRemoteDesktopServiceId(int itemId) {
+            object[] results = this.Invoke("GetRemoteDesktopServiceId", new object[] {
+                        itemId});
+            return ((int)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginGetRemoteDesktopServiceId(int itemId, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("GetRemoteDesktopServiceId", new object[] {
+                        itemId}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public int EndGetRemoteDesktopServiceId(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((int)(results[0]));
+        }
+        
+        /// <remarks/>
+        public void GetRemoteDesktopServiceIdAsync(int itemId) {
+            this.GetRemoteDesktopServiceIdAsync(itemId, null);
+        }
+        
+        /// <remarks/>
+        public void GetRemoteDesktopServiceIdAsync(int itemId, object userState) {
+            if ((this.GetRemoteDesktopServiceIdOperationCompleted == null)) {
+                this.GetRemoteDesktopServiceIdOperationCompleted = new System.Threading.SendOrPostCallback(this.OnGetRemoteDesktopServiceIdOperationCompleted);
+            }
+            this.InvokeAsync("GetRemoteDesktopServiceId", new object[] {
+                        itemId}, this.GetRemoteDesktopServiceIdOperationCompleted, userState);
+        }
+        
+        private void OnGetRemoteDesktopServiceIdOperationCompleted(object arg) {
+            if ((this.GetRemoteDesktopServiceIdCompleted != null)) {
+                System.Web.Services.Protocols.InvokeCompletedEventArgs invokeArgs = ((System.Web.Services.Protocols.InvokeCompletedEventArgs)(arg));
+                this.GetRemoteDesktopServiceIdCompleted(this, new GetRemoteDesktopServiceIdCompletedEventArgs(invokeArgs.Results, invokeArgs.Error, invokeArgs.Cancelled, invokeArgs.UserState));
+            }
+        }
+        
+        /// <remarks/>
         public new void CancelAsync(object userState) {
             base.CancelAsync(userState);
         }
@@ -4129,6 +4224,58 @@ namespace WebsitePanel.EnterpriseServer {
             get {
                 this.RaiseExceptionIfNecessary();
                 return ((ResultObject)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void ImportCollectionCompletedEventHandler(object sender, ImportCollectionCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class ImportCollectionCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal ImportCollectionCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public ResultObject Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((ResultObject)(this.results[0]));
+            }
+        }
+    }
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    public delegate void GetRemoteDesktopServiceIdCompletedEventHandler(object sender, GetRemoteDesktopServiceIdCompletedEventArgs e);
+    
+    /// <remarks/>
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.3038")]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    public partial class GetRemoteDesktopServiceIdCompletedEventArgs : System.ComponentModel.AsyncCompletedEventArgs {
+        
+        private object[] results;
+        
+        internal GetRemoteDesktopServiceIdCompletedEventArgs(object[] results, System.Exception exception, bool cancelled, object userState) : 
+                base(exception, cancelled, userState) {
+            this.results = results;
+        }
+        
+        /// <remarks/>
+        public int Result {
+            get {
+                this.RaiseExceptionIfNecessary();
+                return ((int)(this.results[0]));
             }
         }
     }
