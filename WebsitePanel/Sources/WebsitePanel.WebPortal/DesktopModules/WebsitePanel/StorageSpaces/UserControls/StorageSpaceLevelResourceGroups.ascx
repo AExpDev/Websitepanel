@@ -9,7 +9,7 @@
             <asp:Button ID="btnDelete" runat="server" Text="Delete" CssClass="Button1" OnClick="btnDelete_Click" meta:resourcekey="btnDelete" />
         </div>
         <asp:GridView ID="gvResourceGroups" runat="server" meta:resourcekey="gvResourceGroups" AutoGenerateColumns="False"
-            Width="600px" CssSelectorClass="NormalGridView"
+            Width="600px" CssSelectorClass="NormalGridView" 
             DataKeyNames="GroupId">
             <Columns>
                 <asp:TemplateField>
@@ -21,7 +21,7 @@
                     </ItemTemplate>
                     <ItemStyle Width="10px" />
                 </asp:TemplateField>
-                <asp:TemplateField  HeaderText="Name">
+                <asp:TemplateField meta:resourcekey="gvResourceGroupsName" >
                     <ItemStyle Width="96%" Wrap="false" HorizontalAlign="Left"></ItemStyle>
                     <ItemTemplate>
                         <asp:Literal ID="litGroupName" runat="server" Text='<%# Eval("GroupName") %>'></asp:Literal>
@@ -72,7 +72,7 @@
                                             </ItemTemplate>
                                             <ItemStyle Width="10px" />
                                         </asp:TemplateField>
-                                        <asp:TemplateField>
+                                        <asp:TemplateField meta:resourcekey="gvResourceGroupsName">
                                             <ItemStyle Width="50%" HorizontalAlign="Left"></ItemStyle>
                                             <ItemTemplate>
                                                 <asp:Literal ID="litGroupName" runat="server" Text='<%# Eval("GroupName") %>'></asp:Literal>

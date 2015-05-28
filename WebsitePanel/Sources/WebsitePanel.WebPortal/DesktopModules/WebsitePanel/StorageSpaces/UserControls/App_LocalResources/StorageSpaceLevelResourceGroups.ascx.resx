@@ -159,4 +159,7 @@
   <data name="gvResourceGroups.EmptyDataText" xml:space="preserve">
     <value>The list of resource groups is empty. Click "Add..." button.</value>
   </data>
+  <data name="gvResourceGroupsName.HeaderText" xml:space="preserve">
+    <value>Name</value>
+  </data>
 </root>
