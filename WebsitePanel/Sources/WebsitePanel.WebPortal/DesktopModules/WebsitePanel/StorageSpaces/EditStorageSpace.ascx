@@ -30,7 +30,7 @@
                                         <asp:Localize ID="locName" runat="server" meta:resourcekey="locName"></asp:Localize>
                                     </td>
                                     <td style="width: 250px;">
-                                        <asp:TextBox ID="txtName" runat="server" CssClass="NormalTextBox" />
+                                        <asp:TextBox ID="txtName" runat="server" CssClass="HugeTextBox200" />
                                         <asp:RequiredFieldValidator runat="server" ID="valReqTxtName" ControlToValidate="txtName" meta:resourcekey="valReqTxtName" ErrorMessage="*" ValidationGroup="SaveSpaceStorage" />
                                     </td>
                                 </tr>

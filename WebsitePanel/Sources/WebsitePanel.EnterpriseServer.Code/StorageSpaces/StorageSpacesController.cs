@@ -473,8 +473,8 @@ namespace WebsitePanel.EnterpriseServer
 
                 var ss = StorageSpacesController.GetStorageSpaceService(storageSpace.ServiceId);
 
-                var fullPath = Path.Combine(storageSpace.Path, groupName, organizationId, folderName);
-                var uncPath = Path.Combine(storageSpace.UncPath, groupName, organizationId, folderName);
+                var fullPath = CreateFilePath(storageSpace.Path, organizationId, groupName, folderName);
+                var uncPath = CreateFilePath(storageSpace.UncPath, organizationId, groupName, folderName);
 
                 ss.CreateFolder(fullPath);
 
@@ -509,12 +509,12 @@ namespace WebsitePanel.EnterpriseServer
             return result;
         }
 
-        public static ResultObject UpdateStorageSpaceFolder(int storageSpaceId, int storageSpaceFolderId, string folderName, string relativePath, long quotaInBytes, QuotaType quotaType)
+        public static ResultObject UpdateStorageSpaceFolder(int storageSpaceId, int storageSpaceFolderId, string organizationId, string groupName, string folderName, long quotaInBytes, QuotaType quotaType)
         {
-            return UpdateStorageSpaceFolderInternal(storageSpaceId, storageSpaceFolderId, folderName, relativePath, quotaInBytes, quotaType);
+            return UpdateStorageSpaceFolderInternal(storageSpaceId, storageSpaceFolderId, organizationId, groupName, folderName, quotaInBytes, quotaType);
         }
 
-        private static ResultObject UpdateStorageSpaceFolderInternal(int storageSpaceId, int storageSpaceFolderId,string folderName, string relativePath, long quotaInBytes, QuotaType quotaType)
+        private static ResultObject UpdateStorageSpaceFolderInternal(int storageSpaceId, int storageSpaceFolderId, string organizationId, string groupName, string folderName, long quotaInBytes, QuotaType quotaType)
         {
             var result = TaskManager.StartResultTask<ResultObject>("STORAGE_SPACES", "UPDATE_STORAGE_SPACE_FOLDER");
 
@@ -529,8 +529,8 @@ namespace WebsitePanel.EnterpriseServer
 
                 var ss = StorageSpacesController.GetStorageSpaceService(storageSpace.ServiceId);
 
-                var fullPath = Path.Combine(storageSpace.Path, relativePath);
-                var uncPath = Path.Combine(storageSpace.UncPath, relativePath);
+                var fullPath = CreateFilePath(storageSpace.Path, organizationId, groupName, folderName);
+                var uncPath = CreateFilePath(storageSpace.UncPath, organizationId, groupName, folderName);
 
                 ss.UpdateFolderQuota(fullPath, quotaInBytes, quotaType);
 
@@ -554,6 +554,11 @@ namespace WebsitePanel.EnterpriseServer
             }
 
             return result;
+        }
+
+        private static string CreateFilePath(string path, string organizationId, string groupName, string folderName)
+        {
+            return Path.Combine(path, groupName, organizationId, folderName);
         }
 
         public static ResultObject DeleteStorageSpaceFolder(int storageSpaceId, int storageSpaceFolderId)

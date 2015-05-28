@@ -813,9 +813,7 @@ namespace WebsitePanel.EnterpriseServer
                             throw new Exception(result.ErrorCodes.First());
                         }
 
-                        var relativePath = Path.Combine(ResourceGroups.EnterpriseStorage, org.OrganizationId, newFolder);
-
-                        StorageSpacesController.UpdateStorageSpaceFolder(esFolder.StorageSpaceId, esFolder.StorageSpaceFolderId.Value, newFolder, relativePath, esFolder.FsrmQuotaSizeBytes, esFolder.FsrmQuotaType);
+                        StorageSpacesController.UpdateStorageSpaceFolder(esFolder.StorageSpaceId, esFolder.StorageSpaceFolderId.Value, org.OrganizationId, ResourceGroups.EnterpriseStorage, newFolder, esFolder.FsrmQuotaSizeBytes, esFolder.FsrmQuotaType);
 
                         esFolder = ObjectUtils.FillObjectFromDataReader<EsFolder>(DataProvider.GetEnterpriseFolder(itemId, oldFolder));
 

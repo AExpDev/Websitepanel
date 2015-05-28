@@ -59,7 +59,7 @@ namespace WebsitePanel.Portal.StorageSpaces
                 {
                     RefreshTreeView(serviceId, path);
 
-                    FoldersTree.Enabled = !CheckStorageIsInUse(PanelRequest.StorageSpaceId);
+                    FoldersTree.Enabled = PanelRequest.StorageSpaceId < 1;
                 }
             }
         }
@@ -225,7 +225,7 @@ namespace WebsitePanel.Portal.StorageSpaces
             storage.Name = txtName.Text;
             storage.LevelId = Utils.ParseInt(ddlSsLevel.SelectedValue);
 
-            if (PanelRequest.StorageSpaceId < 1 || !CheckStorageIsInUse(PanelRequest.StorageSpaceId))
+            if (PanelRequest.StorageSpaceId < 1)
             {
                 storage.ServiceId = Utils.ParseInt(ddlStorageService.SelectedValue);
                 storage.Path = GetCheckedNodeValue(FoldersTree.Nodes);

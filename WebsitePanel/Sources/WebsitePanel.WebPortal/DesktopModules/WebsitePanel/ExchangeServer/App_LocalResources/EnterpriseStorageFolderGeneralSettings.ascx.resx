@@ -175,6 +175,6 @@
     <value>Move to Storage Spaces</value>
   </data>
   <data name="btnMigrate.OnClientClick" xml:space="preserve">
-    <value>ShowProgressDialog('Moving folder to Storage Space...');</value>
+    <value>if(!confirm('Are you sure?')) return false; else ShowProgressDialog('Moving folder to Storage Space...');</value>
   </data>
 </root>
