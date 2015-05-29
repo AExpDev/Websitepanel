@@ -12951,8 +12951,6 @@ GO
 --STORAGE SPACES
 
 
---TODO Remove drop
-
 IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaces')
 BEGIN
 	CREATE TABLE StorageSpaces
