@@ -93,14 +93,14 @@ namespace WebsitePanel.EnterpriseServer
             return GetFolder(itemId, string.Empty);
         }
 
-        public static ResultObject CreateFolder(int itemId)
+        public static ResultObject CreateFolder(int itemId, bool isRootFolder = false)
         {
-            return CreateFolder(itemId, string.Empty, 0, QuotaType.Soft, false);
+            return CreateFolder(itemId, string.Empty, 0, QuotaType.Soft, false, isRootFolder);
         }
 
-        public static ResultObject CreateFolder(int itemId, string folderName, int quota, QuotaType quotaType, bool addDefaultGroup)
+        public static ResultObject CreateFolder(int itemId, string folderName, int quota, QuotaType quotaType, bool addDefaultGroup, bool isRootFolder = false)
         {
-            return CreateFolderInternal(itemId, folderName, quota, quotaType, addDefaultGroup);
+            return CreateFolderInternal(itemId, folderName, quota, quotaType, addDefaultGroup, isRootFolder);
         }
 
         public static ResultObject DeleteFolder(int itemId)
@@ -527,7 +527,7 @@ namespace WebsitePanel.EnterpriseServer
 
                     string homePath = string.Format("{0}:\\{1}", locationDrive, usersHome);
 
-                    EnterpriseStorageController.CreateFolder(itemId);
+                    EnterpriseStorageController.CreateFolder(itemId, true);
 
                     EnterpriseStorageController.AddWebDavDirectory(packageId, usersDomain, org.OrganizationId, homePath);
                 }
@@ -734,6 +734,11 @@ namespace WebsitePanel.EnterpriseServer
 
                 var esFolder = ObjectUtils.FillObjectFromDataReader<EsFolder>(DataProvider.GetEnterpriseFolder(itemId, folderName));
 
+                if (esFolder == null)
+                {
+                    return null;
+                }
+
                 if (esFolder.StorageSpaceFolderId == null)
                 {
                     return es.GetFolder(org.OrganizationId, folderName, new WebDavSetting(esFolder.LocationDrive, esFolder.HomeFolder, esFolder.Domain));
@@ -847,7 +852,7 @@ namespace WebsitePanel.EnterpriseServer
             }
         }
 
-        protected static ResultObject CreateFolderInternal(int itemId, string folderName, int quota, QuotaType quotaType, bool addDefaultGroup)
+        protected static ResultObject CreateFolderInternal(int itemId, string folderName, int quota, QuotaType quotaType, bool addDefaultGroup, bool rootFolder = false)
         {
             ResultObject result = TaskManager.StartResultTask<ResultObject>("ENTERPRISE_STORAGE", "CREATE_FOLDER");
 
@@ -871,6 +876,21 @@ namespace WebsitePanel.EnterpriseServer
 
                 if (webDavSetting == null)
                 {
+                    if (rootFolder)
+                    {
+
+                        es.CreateFolder(org.OrganizationId, folderName, webDavSetting);
+
+                        DataProvider.AddEntepriseFolder(itemId, folderName, quota, webDavSetting.LocationDrive,
+                            webDavSetting.HomeFolder, webDavSetting.Domain, null);
+
+                        SetFolderQuota(org.PackageId, org.OrganizationId, folderName, quota, quotaType, webDavSetting);
+
+                        DataProvider.UpdateEnterpriseFolder(itemId, folderName, folderName, quota);
+
+                        return result;
+                    }
+
                     var storageSpaceFolderResult = StorageSpacesController.CreateStorageSpaceFolder(ResourceGroups.EnterpriseStorage, org.OrganizationId, folderName, quotaInBytses, quotaType);
 
                     if (!storageSpaceFolderResult.IsSuccess)

@@ -4598,7 +4598,7 @@ namespace WebsitePanel.EnterpriseServer
             );
         }
 
-        public static int AddEntepriseFolder(int itemId, string folderName, int folderQuota, string locationDrive, string homeFolder, string domain, int storageSpaceFolderId)
+        public static int AddEntepriseFolder(int itemId, string folderName, int folderQuota, string locationDrive, string homeFolder, string domain, int? storageSpaceFolderId)
         {
             SqlParameter prmId = new SqlParameter("@FolderID", SqlDbType.Int);
             prmId.Direction = ParameterDirection.Output;
