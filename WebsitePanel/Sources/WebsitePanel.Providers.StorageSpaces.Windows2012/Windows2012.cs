@@ -182,16 +182,35 @@ namespace WebsitePanel.Providers.StorageSpaces
             FileUtils.CreateDirectory(fullPath);
         }
 
-        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions)
+        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance)
         {
             Log.WriteStart("SetFolderNtfsPermissions");
             Log.WriteInfo("Full path : {0}", fullPath);
 
             try
             {
+                if (preserveInheritance == false && permissions != null)
+                {
+                    if (permissions.All(x =>!string.Equals(x.AccountName, "Domain Admins",StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        permissions = permissions.Concat(new[]
+                        {
+                            new UserPermission {AccountName = "Domain Admins", Read = true, Write = true}
+                        }).ToArray();
+                    }
+
+                    if (permissions.All(x => !string.Equals(x.AccountName, "System", StringComparison.InvariantCultureIgnoreCase)))
+                    {
+                        permissions = permissions.Concat(new[]
+                        {
+                            new UserPermission {AccountName = "System", Read = true, Write = true}
+                        }).ToArray();
+                    }
+                }
+
                 SecurityUtils.ResetNtfsPermissions(fullPath);
 
-                SecurityUtils.GrantGroupNtfsPermissions(fullPath, permissions, false, new RemoteServerSettings(), null, null);
+                SecurityUtils.GrantGroupNtfsPermissions(fullPath, permissions, false, new RemoteServerSettings(), null, null,isProtected, preserveInheritance);
             }
             catch (Exception ex)
             {
@@ -331,7 +350,7 @@ namespace WebsitePanel.Providers.StorageSpaces
 
                 var scripts = new List<string>
                 {                
-                    string.Format("net share {0}=\"{1}\" \"/grant:NETWORK SERVICE,full\" \"/grant:Everyone,full\" \"/grant:{2},full\"",shareName, fullPath, WebdavSiteAppPoolIdentity)
+                    string.Format("net share {0}=\"{1}\" \"/grant:NETWORK SERVICE,full\" \"/grant:Everyone,full\"",shareName, fullPath)
                 };
 
                 object[] errors = null;

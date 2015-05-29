@@ -382,7 +382,7 @@ namespace WebsitePanel.EnterpriseServer
 
                     if (esFolder.StorageSpaceFolderId != null)
                     {
-                        StorageSpacesController.SetFolderNtfsPermissions(esFolder.StorageSpaceId, esFolder.Path, ConvertToUserPermissions(itemId, permissions.ToArray()));
+                        StorageSpacesController.SetFolderNtfsPermissions(esFolder.StorageSpaceId, esFolder.Path, ConvertToUserPermissions(itemId, permissions.ToArray()), true, false);
                     }
                 }
                 catch (Exception ex)
@@ -829,7 +829,7 @@ namespace WebsitePanel.EnterpriseServer
 
                         SetFolderWebDavRulesInternal(itemId, newFolder, ConvertToESPermission(itemId, rules));
 
-                        StorageSpacesController.SetFolderNtfsPermissions(esFolder.StorageSpaceId, esFolder.Path, ConvertToUserPermissions(rules));
+                        StorageSpacesController.SetFolderNtfsPermissions(esFolder.StorageSpaceId, esFolder.Path, ConvertToUserPermissions(rules), true, false);
                     }
 
                     Organizations orgProxy = OrganizationController.GetOrganizationProxy(org.ServiceId);
@@ -920,7 +920,7 @@ namespace WebsitePanel.EnterpriseServer
 
                         es.SetFolderWebDavRules(org.OrganizationId, folderName, null, rules.ToArray());
 
-                        StorageSpacesController.SetFolderNtfsPermissions(storageFolder.StorageSpaceId, storageFolder.Path, ConvertToUserPermissions(rules.ToArray()));
+                        StorageSpacesController.SetFolderNtfsPermissions(storageFolder.StorageSpaceId, storageFolder.Path, ConvertToUserPermissions(rules.ToArray()), true, false);
                     }
                 }
                 else
@@ -1217,7 +1217,7 @@ namespace WebsitePanel.EnterpriseServer
                     throw new Exception("Error updating webdav rules");
                 }
 
-                var ntfsResult = StorageSpacesController.SetFolderNtfsPermissions(storageFolder.StorageSpaceId, storageFolder.Path, ConvertToUserPermissions(systemFile.Rules.ToArray()));
+                var ntfsResult = StorageSpacesController.SetFolderNtfsPermissions(storageFolder.StorageSpaceId, storageFolder.Path, ConvertToUserPermissions(systemFile.Rules.ToArray()), true, false);
 
                 if (!ntfsResult.IsSuccess)
                 {

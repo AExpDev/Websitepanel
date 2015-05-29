@@ -576,17 +576,21 @@ namespace WebsitePanel.Providers.StorageSpaces {
         /// <remarks/>
         [System.Web.Services.Protocols.SoapHeaderAttribute("ServiceProviderSettingsSoapHeaderValue")]
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://smbsaas/websitepanel/server/SetFolderNtfsPermissions", RequestNamespace="http://smbsaas/websitepanel/server/", ResponseNamespace="http://smbsaas/websitepanel/server/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions) {
+        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance) {
             this.Invoke("SetFolderNtfsPermissions", new object[] {
                         fullPath,
-                        permissions});
+                        permissions,
+                        isProtected,
+                        preserveInheritance});
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginSetFolderNtfsPermissions(string fullPath, UserPermission[] permissions, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginSetFolderNtfsPermissions(string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance, System.AsyncCallback callback, object asyncState) {
             return this.BeginInvoke("SetFolderNtfsPermissions", new object[] {
                         fullPath,
-                        permissions}, callback, asyncState);
+                        permissions,
+                        isProtected,
+                        preserveInheritance}, callback, asyncState);
         }
         
         /// <remarks/>
@@ -595,18 +599,20 @@ namespace WebsitePanel.Providers.StorageSpaces {
         }
         
         /// <remarks/>
-        public void SetFolderNtfsPermissionsAsync(string fullPath, UserPermission[] permissions) {
-            this.SetFolderNtfsPermissionsAsync(fullPath, permissions, null);
+        public void SetFolderNtfsPermissionsAsync(string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance) {
+            this.SetFolderNtfsPermissionsAsync(fullPath, permissions, isProtected, preserveInheritance, null);
         }
         
         /// <remarks/>
-        public void SetFolderNtfsPermissionsAsync(string fullPath, UserPermission[] permissions, object userState) {
+        public void SetFolderNtfsPermissionsAsync(string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance, object userState) {
             if ((this.SetFolderNtfsPermissionsOperationCompleted == null)) {
                 this.SetFolderNtfsPermissionsOperationCompleted = new System.Threading.SendOrPostCallback(this.OnSetFolderNtfsPermissionsOperationCompleted);
             }
             this.InvokeAsync("SetFolderNtfsPermissions", new object[] {
                         fullPath,
-                        permissions}, this.SetFolderNtfsPermissionsOperationCompleted, userState);
+                        permissions,
+                        isProtected,
+                        preserveInheritance}, this.SetFolderNtfsPermissionsOperationCompleted, userState);
         }
         
         private void OnSetFolderNtfsPermissionsOperationCompleted(object arg) {

@@ -693,12 +693,12 @@ namespace WebsitePanel.EnterpriseServer
             return folders;
         }
 
-        public static ResultObject SetFolderNtfsPermissions(int storageSpaceId, string fullPath, UserPermission[] permissions)
+        public static ResultObject SetFolderNtfsPermissions(int storageSpaceId, string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance)
         {
-            return SetFolderNtfsPermissionsInternal(storageSpaceId, fullPath, permissions);
+            return SetFolderNtfsPermissionsInternal(storageSpaceId, fullPath, permissions, isProtected, preserveInheritance);
         }
 
-        private static ResultObject SetFolderNtfsPermissionsInternal(int storageSpaceId, string fullPath, UserPermission[] permissions)
+        private static ResultObject SetFolderNtfsPermissionsInternal(int storageSpaceId, string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance)
         {
             var result = TaskManager.StartResultTask<IntResult>("STORAGE_SPACES", "SET_NTFS_PERMISSIONS_ON_FOLDER");
 
@@ -719,7 +719,7 @@ namespace WebsitePanel.EnterpriseServer
 
                 var ss = GetStorageSpaceService(storage.ServiceId);
 
-                ss.SetFolderNtfsPermissions(fullPath, permissions);
+                ss.SetFolderNtfsPermissions(fullPath, permissions, isProtected, preserveInheritance);
             }
             catch (Exception exception)
             {

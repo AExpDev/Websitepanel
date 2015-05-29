@@ -11,32 +11,5 @@ namespace WebsitePanel.Portal.ProviderControls {
     
     
     public partial class StorageSpaceServices_Settings {
-        
-        /// <summary>
-        /// lblWebDavSiteAppPoolIdentity control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblWebDavSiteAppPoolIdentity;
-        
-        /// <summary>
-        /// txtWebDavSiteAppPoolIdentity control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtWebDavSiteAppPoolIdentity;
-        
-        /// <summary>
-        /// valRequiredFolder control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator valRequiredFolder;
     }
 }

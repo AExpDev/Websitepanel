@@ -216,12 +216,12 @@ namespace WebsitePanel.Server
         }
 
         [WebMethod, SoapHeader("settings")]
-        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions)
+        public void SetFolderNtfsPermissions(string fullPath, UserPermission[] permissions, bool isProtected, bool preserveInheritance)
         {
             try
             {
                 Log.WriteStart("'{0}' SetFolderNtfsPermissions", ProviderSettings.ProviderName);
-                StorageSpaceProvider.SetFolderNtfsPermissions(fullPath, permissions);
+                StorageSpaceProvider.SetFolderNtfsPermissions(fullPath, permissions, isProtected, preserveInheritance);
                 Log.WriteEnd("'{0}' SetFolderNtfsPermissions", ProviderSettings.ProviderName);
             }
             catch (Exception ex)
