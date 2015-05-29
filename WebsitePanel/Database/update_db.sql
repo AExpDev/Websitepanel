@@ -12691,7 +12691,7 @@ Go
 
 IF NOT EXISTS (SELECT * FROM [dbo].[ResourceGroups] WHERE [GroupName] = 'Storage Spaces')
 BEGIN
-INSERT [dbo].[ResourceGroups] ([GroupID], [GroupName], [GroupOrder], [GroupController], [ShowGroup]) VALUES (49, N'StorageSpaceServices', 26, N'WebsitePanel.EnterpriseServer.StorageSpacesController', 0)
+INSERT [dbo].[ResourceGroups] ([GroupID], [GroupName], [GroupOrder], [GroupController], [ShowGroup]) VALUES (49, N'StorageSpaceServices', 26, N'WebsitePanel.EnterpriseServer.StorageSpacesController', 1)
 END
 GO
 
@@ -12707,11 +12707,6 @@ GO
 
 
 -- STORAGE SPACE LEVELS
---TODO REMOVE DROP
-IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevels')
-BEGIN
-DROP TABLE StorageSpaceLevels
-END
 
 IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevels')
 BEGIN
@@ -12867,12 +12862,6 @@ GO
 
 --STORAGE SPACE LEVEL RESOURCE GROUPS
 
---TODO Remove drop
-IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevelResourceGroups')
-BEGIN
-DROP TABLE StorageSpaceLevelResourceGroups
-END
-
 IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceLevelResourceGroups')
 BEGIN
 	CREATE TABLE StorageSpaceLevelResourceGroups
@@ -12963,10 +12952,6 @@ GO
 
 
 --TODO Remove drop
-IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaces')
-BEGIN
-DROP TABLE StorageSpaces
-END
 
 IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaces')
 BEGIN
@@ -13259,12 +13244,6 @@ GO
 
 -- STORAGE SPACE FOLDER
 
-
---TODO Remove drop
-IF EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceFolders')
-BEGIN
-DROP TABLE StorageSpaceFolders
-END
 
 IF NOT EXISTS (SELECT * FROM SYS.TABLES WHERE name = 'StorageSpaceFolders')
 BEGIN
