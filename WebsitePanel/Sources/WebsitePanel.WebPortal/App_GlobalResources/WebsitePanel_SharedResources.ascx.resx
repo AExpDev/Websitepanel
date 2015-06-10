@@ -4084,6 +4084,7 @@
   <data name="Error.VPS_ERROR_GET_VM_REPLICATION" xml:space="preserve">
     <value>Cannot get replication for the virtual machine</value>
   </data>
+  
   <data name="Error.VPS_SET_REPLICA_SERVER_ERROR" xml:space="preserve">
     <value>Cannot set replication for the server</value>
   </data>
@@ -4123,6 +4124,7 @@
   <data name="Error.VPS_QUOTA_REPLICATION_ENABLED" xml:space="preserve">
     <value>Replications is not allowed in the hosting plan</value>
   </data>
+  
   <data name="VPS.VPS_JOB_FAILED_ERROR" xml:space="preserve">
     <value>Job execution failed with the following code: {1}</value>
   </data>
@@ -5862,6 +5864,9 @@
   </data>
   <data name="ERROR.RDS_USERS_NOT_DELETED" xml:space="preserve">
     <value>Unable to remove the following user(s) since they are local admins or they were granted access to remote applications:</value>
+  </data>
+  <data name="ERROR.RDS_USERS_NOT_UPDATED" xml:space="preserve">
+    <value>RDS Users updating error</value>
   </data>
   <data name="ERROR.REMOTE_DESKTOP_SERVICES_LOG_OFF_USER" xml:space="preserve">
     <value>RDS User logging off error</value>

@@ -31,6 +31,7 @@ using System.IO;
 using System.Configuration;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 using System.Reflection;
 using System.Globalization;
@@ -261,9 +262,9 @@ namespace WebsitePanel.Providers.HostedSolution
             return GetMailboxPermissionsInternal(organizationId, accountName, null);
         }
 
-        public void SetMailboxPermissions(string organizationId, string accountName, string[] sendAsAccounts, string[] fullAccessAccounts)
+        public void SetMailboxPermissions(string organizationId, string accountName, string[] sendAsAccounts, string[] fullAccessAccounts, string[] onBehalfOfAccounts, string[] calendarAccounts, string[] contactAccounts)
         {
-            SetMailboxPermissionsInternal(organizationId, accountName, sendAsAccounts, fullAccessAccounts);
+            SetMailboxPermissionsInternal(organizationId, accountName, sendAsAccounts, fullAccessAccounts, onBehalfOfAccounts, calendarAccounts, contactAccounts);
         }
 
         public void DeleteMailbox(string accountName)
@@ -1569,6 +1570,106 @@ namespace WebsitePanel.Providers.HostedSolution
             return ret;
         }
 
+        private ExchangeAccount[] GetMailboxCalendarAccounts(Runspace runSpace, string organizationId, string accountName)
+        {
+            ExchangeLog.LogStart("GetMailboxCalendarAccounts");
+
+            string cn = GetMailboxCommonName(runSpace, accountName);
+            ExchangeAccount[] ret = GetCalendarAccounts(runSpace, organizationId, cn);
+
+            ExchangeLog.LogEnd("GetMailboxCalendarAccounts");
+            return ret;
+        }
+
+        private ExchangeAccount[] GetMailboxContactAccounts(Runspace runSpace, string organizationId, string accountName)
+        {
+            ExchangeLog.LogStart("GetMailboxContactAccounts");
+
+            string cn = GetMailboxCommonName(runSpace, accountName);
+            ExchangeAccount[] ret = GetContactAccounts(runSpace, organizationId, cn);
+
+            ExchangeLog.LogEnd("GetMailboxContactAccounts");
+            return ret;
+        }
+
+        private void ResetMailboxOnBehalfPermissions(Runspace runSpace, string accountName)
+        {
+            ExchangeLog.LogStart("ResetMailboxOnBehalfPermissions");
+
+            SetMailboxOnBehalfPermissions(runSpace, accountName, null);
+
+            ExchangeLog.LogEnd("ResetMailboxOnBehalfPermissions");
+        }
+
+        private void SetMailboxOnBehalfPermissions(Runspace runSpace, string accountName, string[] accounts)
+        {
+            ExchangeLog.LogStart("SetMailboxOnBehalfPermissions");
+
+            Command cmd = new Command("Set-Mailbox");
+            cmd.Parameters.Add("Identity", accountName);
+            cmd.Parameters.Add("GrantSendOnBehalfTo", accounts);
+            ExecuteShellCommand(runSpace, cmd);
+
+            ExchangeLog.LogEnd("SetMailboxOnBehalfPermissions");
+        }
+
+        private void ResetMailboxFolderPermissions(Runspace runSpace, string folderPath, string[] accounts, ExchangeTransaction transaction)
+        {
+            ExchangeLog.LogStart("ResetMailboxFolderPermissions");
+
+            foreach (var account in accounts)
+            {
+                RemoveMailboxFolderPermission(runSpace, folderPath, account);
+
+                transaction.RemoveMailboxFolderPermissions(folderPath, account);
+            }
+
+            ExchangeLog.LogEnd("ResetMailboxFolderPermissions");
+        }
+
+        private void RemoveMailboxFolderPermission(Runspace runSpace, string folderPath, string account)
+        {
+            Command cmd = new Command("Remove-MailboxFolderPermission");
+            cmd.Parameters.Add("Identity", folderPath);
+            cmd.Parameters.Add("User", account);
+            ExecuteShellCommand(runSpace, cmd);
+        }
+
+        private void AddMailboxFolderPermissions(Runspace runSpace, string folderPath, string[] accounts, ExchangeTransaction transaction)
+        {
+            ExchangeLog.LogStart("SetMailboxCalendarPermissions");
+
+            foreach (var account in accounts)
+            {
+                AddMailboxFolderPermission(runSpace, folderPath, account);
+
+                transaction.AddMailboxFolderPermission(folderPath, account);
+            }
+
+            ExchangeLog.LogEnd("SetMailboxCalendarPermissions");
+        }
+
+        private void AddMailboxFolderPermission(Runspace runSpace, string folderPath, string account)
+        {
+            Command cmd = new Command("Add-MailboxFolderPermission");
+            cmd.Parameters.Add("Identity", folderPath);
+            cmd.Parameters.Add("User", account);
+            cmd.Parameters.Add("AccessRights", "Reviewer");
+
+            ExecuteShellCommand(runSpace, cmd);
+        }
+
+        private ExchangeAccount[] GetMailboxOnBehalfOfAccounts(Runspace runSpace, string organizationId, string accountName)
+        {
+            ExchangeLog.LogStart("GetMailboxOnBehalfOfAccounts");
+
+            string cn = GetMailboxCommonName(runSpace, accountName);
+            ExchangeAccount[] ret = GetOnBehalfOfAccounts(runSpace, organizationId, cn);
+
+            ExchangeLog.LogEnd("GetMailboxOnBehalfOfAccounts");
+            return ret;
+        }
+
         private ExchangeAccount[] GetSendAsAccounts(Runspace runSpace, string organizationId, string accountId)
         {
             ExchangeLog.LogStart("GetSendAsAccounts");
@@ -1602,6 +1703,98 @@ namespace WebsitePanel.Providers.HostedSolution
             return accounts.ToArray();
         }
 
+        private ExchangeAccount[] GetCalendarAccounts(Runspace runSpace, string organizationId, string accountId)
+        {
+            ExchangeLog.LogStart("GetContactAccounts");
+
+            var folderPath = GetMailboxFolderPath(accountId, ExchangeFolders.Calendar);
+
+            var accounts = GetMailboxFolderPermissions(runSpace, organizationId, folderPath);
+
+            ExchangeLog.LogEnd("GetContactAccounts");
+            return accounts.ToArray();
+        }
+
+        private ExchangeAccount[] GetContactAccounts(Runspace runSpace, string organizationId, string accountId)
+        {
+            ExchangeLog.LogStart("GetContactAccounts");
+
+            var folderPath = GetMailboxFolderPath(accountId, ExchangeFolders.Contacts);
+
+            var accounts = GetMailboxFolderPermissions(runSpace, organizationId, folderPath);
+
+            ExchangeLog.LogEnd("GetContactAccounts");
+            return accounts.ToArray();
+        }
+
+        private static string GetMailboxFolderPath(string accountId, string folderName)
+        {
+            return accountId + @":\" + folderName;
+        }
+
+        private List<ExchangeAccount> GetMailboxFolderPermissions(Runspace runSpace, string organizationId, string folderPath)
+        {
+            Command cmd = new Command("Get-MailboxFolderPermission");
+            cmd.Parameters.Add("Identity", folderPath);
+            Collection<PSObject> results = ExecuteShellCommand(runSpace, cmd);
+
+            List<ExchangeAccount> accounts = new List<ExchangeAccount>();
+
+            foreach (PSObject current in results)
+            {
+                string user = GetPSObjectProperty(current, "User").ToString();
+
+                var accessRights = GetPSObjectProperty(current, "AccessRights") as IEnumerable;
+
+                if (accessRights != null
+                    &&
+                    accessRights.Cast<object>()
+                        .All(x => !string.Equals(x.ToString(), "none", StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    ExchangeAccount account = GetOrganizationAccount(runSpace, organizationId, user);
+
+                    if (account != null)
+                    {
+                        accounts.Add(account);
+                    }
+                }
+            }
+
+            return accounts;
+        }
+
+        private ExchangeAccount[] GetOnBehalfOfAccounts(Runspace runSpace, string organizationId, string accountId)
+        {
+            ExchangeLog.LogStart("GetOnBehalfOfAccounts");
+
+            Command cmd = new Command("Get-Mailbox");
+            cmd.Parameters.Add("Identity", accountId);
+            var result  = ExecuteShellCommand(runSpace, cmd).FirstOrDefault();
+            List<ExchangeAccount> accounts = new List<ExchangeAccount>();
+
+            if (result == null)
+            {
+                return accounts.ToArray();
+            }
+
+            var onBehalfs = GetPSObjectProperty(result, "GrantSendOnBehalfTo") as IEnumerable;
+
+            foreach (object current in onBehalfs)
+            {
+                string user = current.ToString();
+
+                ExchangeAccount account = GetOrganizationAccount(runSpace, organizationId, user);
+
+                if (account != null)
+                {
+                    accounts.Add(account);
+                }
+
+            }
+
+            ExchangeLog.LogEnd("GetOnBehalfOfAccounts");
+            return accounts.ToArray();
+        }
 
         private ExchangeAccount[] GetMailBoxFullAccessAcounts(Runspace runSpace, string organizationId, string accountName)
         {
@@ -1659,6 +1852,9 @@ namespace WebsitePanel.Providers.HostedSolution
                 exchangeMailbox = new ExchangeMailbox();
                 exchangeMailbox.FullAccessAccounts = GetMailBoxFullAccessAcounts(runspace, organizationId, accountName);
                 exchangeMailbox.SendAsAccounts = GetMailboxSendAsAccounts(runspace, organizationId, accountName);
+                exchangeMailbox.OnBehalfOfAccounts = GetMailboxOnBehalfOfAccounts(runspace, organizationId, accountName);
+                exchangeMailbox.CalendarAccounts = GetMailboxCalendarAccounts(runspace, organizationId, accountName);
+                exchangeMailbox.ContactAccounts = GetMailboxContactAccounts(runspace, organizationId, accountName);
             }
             catch (Exception ex)
             {
@@ -1708,7 +1904,7 @@ namespace WebsitePanel.Providers.HostedSolution
         }
 
 
-        private void SetMailboxPermissionsInternal(string organizationId, string accountName, string[] sendAsAccounts, string[] fullAccessAccounts)
+        private void SetMailboxPermissionsInternal(string organizationId, string accountName, string[] sendAsAccounts, string[] fullAccessAccounts, string[] onBehalfOfAccounts, string[] calendarAccounts, string[] contactAccounts)
         {
             ExchangeLog.LogStart("SetMailboxPermissionsInternal");
 
@@ -1725,13 +1921,18 @@ namespace WebsitePanel.Providers.HostedSolution
             Runspace runSpace = null;
             try
             {
-
                 runSpace = OpenRunspace();
                 string cn = GetMailboxCommonName(runSpace, accountName);
                 ExchangeMailbox mailbox = GetMailboxPermissionsInternal(organizationId, accountName, runSpace);
                 SetSendAsPermissions(runSpace, mailbox.SendAsAccounts, cn, sendAsAccounts);
                 SetMailboxFullAccessPermissions(runSpace, mailbox.FullAccessAccounts, accountName, fullAccessAccounts);
+                SetMailboxOnBehalfPermissions(runSpace, mailbox.OnBehalfOfAccounts, accountName, onBehalfOfAccounts);
 
+                var calendarFolderPath = GetMailboxFolderPath(accountName, ExchangeFolders.Calendar);
+                SetMailboxFolderPermissions(runSpace, mailbox.CalendarAccounts, calendarFolderPath, calendarAccounts);
+
+                var contactsFolderPath = GetMailboxFolderPath(accountName, ExchangeFolders.Contacts);
+                SetMailboxFolderPermissions(runSpace, mailbox.ContactAccounts, contactsFolderPath, contactAccounts);
             }
             catch (Exception ex)
             {
@@ -1817,6 +2018,65 @@ namespace WebsitePanel.Providers.HostedSolution
 
         }
 
+        private void SetMailboxOnBehalfPermissions(Runspace runSpace, ExchangeAccount[] existingAccounts, string accountName, string[] accounts)
+        {
+            ExchangeLog.LogStart("SetMailboxOnBehalfOfPermissions");
+
+            if (string.IsNullOrEmpty(accountName))
+                throw new ArgumentNullException("accountName");
+
+            if (accounts == null)
+                throw new ArgumentNullException("accounts");
+
+            ExchangeTransaction transaction = StartTransaction();
+
+            try
+            {
+                ResetMailboxOnBehalfPermissions(runSpace, accountName);
+                transaction.ResetMailboxOnBehalfPermissions(accountName, existingAccounts.Select(x => x.AccountName).ToArray());
+
+                SetMailboxOnBehalfPermissions(runSpace, accountName, accounts);
+            }
+            catch (Exception)
+            {
+                RollbackTransaction(transaction);
+                throw;
+            }
+
+            ExchangeLog.LogEnd("SetMailboxOnBehalfOfPermissions");
+        }
+
+        private void SetMailboxFolderPermissions(Runspace runSpace, ExchangeAccount[] existingAccounts, string folderPath, string[] accounts)
+        {
+            ExchangeLog.LogStart("SetMailboxFolderPermissions");
+
+            if (string.IsNullOrEmpty(folderPath))
+                throw new ArgumentNullException("folderPath");
+
+            if (accounts == null)
+                throw new ArgumentNullException("accounts");
+
+            ExchangeTransaction transaction = StartTransaction();
+
+            try
+            {
+                SetMailboxFolderPermissions(runSpace, folderPath, existingAccounts.Select(x => x.AccountName).ToArray(), accounts, transaction);
+            }
+            catch (Exception)
+            {
+                RollbackTransaction(transaction);
+                throw;
+            }
+
+            ExchangeLog.LogEnd("SetMailboxFolderPermissions");
+        }
+
+        private void SetMailboxFolderPermissions(Runspace runSpace, string folderPath, string[] existingAccounts, string[] newAccounts, ExchangeTransaction transaction)
+        {
+            ResetMailboxFolderPermissions(runSpace, folderPath, existingAccounts, transaction);
+
+            AddMailboxFolderPermissions(runSpace, folderPath, newAccounts, transaction);
+        }
 
         private void RemoveADPermission(Runspace runSpace, string identity, string account, string accessRights, string extendedRights, string properties)
         {
@@ -7489,6 +7749,15 @@ namespace WebsitePanel.Providers.HostedSolution
                     break;
                 case TransactionAction.TransactionActionTypes.RemoveSendAsPermission:
                     SetExtendedRights(runspace, action.Account, action.Id, "Send-as");
+                    break;
+                case TransactionAction.TransactionActionTypes.ResetMailboxOnBehalfPermissions:
+                    SetMailboxOnBehalfPermissions(runspace, action.Id, action.Accounts);
+                    break;
+                case TransactionAction.TransactionActionTypes.RemoveMailboxFolderPermissions:
+                    AddMailboxFolderPermission(runspace, action.Id, action.Account);
+                    break;
+                case TransactionAction.TransactionActionTypes.AddMailboxFolderPermission:
+                    RemoveMailboxFolderPermission(runspace, action.Id, action.Account);
                     break;
             }
         }
